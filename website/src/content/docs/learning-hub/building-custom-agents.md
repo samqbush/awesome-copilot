@@ -3,7 +3,7 @@ title: 'Building Custom Agents'
 description: 'Learn how to create specialized GitHub Copilot agents with custom personas, tool integrations, and domain expertise.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-06
+lastUpdated: 2026-07-09
 estimatedReadingTime: '10 minutes'
 tags:
   - agents
@@ -259,6 +259,7 @@ The agent can then query your database, analyze query plans, and suggest optimiz
 | Code generation, refactoring | GPT-4.1 |
 | Code-specialized tasks, large context | kimi-k2.7-code *(v1.0.68+)* |
 | Quick analysis, simple tasks | Claude Haiku or GPT-4.1-mini |
+| Fast tasks with minimal compute needs | Gemini 3.5 Flash *(v1.0.69+)* |
 | Large codebase understanding | Models with larger context windows |
 
 ### Organizing Agents in Your Repository
