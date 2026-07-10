@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-24
+lastUpdated: 2026-07-10
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -178,6 +178,30 @@ Or from an interactive session:
 
 > **Deprecation notice**: Installing plugins directly from a GitHub repository URL, raw URL, or local file path (e.g., `copilot plugin install github/awesome-copilot`) is deprecated and will be removed in a future release. Use marketplace-based installation instead.
 
+### Pinning Plugins to an Exact Commit *(v1.0.70+)*
+
+By default, installing a plugin tracks the latest version of the plugin at the branch or tag specified in the marketplace registry. For production environments where you need reproducible, auditable installs, you can pin a plugin to an exact commit SHA:
+
+```bash
+copilot plugin install my-plugin@awesome-copilot --sha abc1234def567890
+```
+
+Or specify it in the repository's `.github/copilot-settings.json` to lock it for the whole team:
+
+```json
+{
+  "plugins": [
+    {
+      "name": "my-plugin",
+      "marketplace": "awesome-copilot",
+      "sha": "abc1234def567890abcdef1234567890abcdef12"
+    }
+  ]
+}
+```
+
+Pinned plugins will not update when you run `copilot plugin update` unless you explicitly remove the pin. This is useful for security audits and compliance workflows where you need to guarantee exactly which plugin code is running.
+
 ### From VS Code
 
 Browse to the plugin via `@agentPlugins` in the Extensions search view or via **Chat: Plugins** in the Command Palette, then click **Install**.
@@ -199,6 +223,16 @@ copilot plugin marketplace update
 # Remove a plugin
 copilot plugin uninstall my-plugin
 ```
+
+### The `/plugins` Dashboard *(v1.0.69+)*
+
+Inside an active Copilot CLI session, the `/plugins` command opens an interactive dashboard where you can browse, install, and manage plugins without leaving your conversation:
+
+```
+/plugins
+```
+
+The dashboard shows all installed plugins and their components (agents, skills, hooks) at a glance. You can install new plugins, update existing ones, and remove plugins you no longer need — all from within a running session without interrupting your work. This is the fastest way to add a plugin mid-session when you realize you need a capability that isn't already installed.
 
 ### Loading Plugins from a Local Directory
 

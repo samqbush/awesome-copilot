@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-07-10
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -433,6 +433,34 @@ The `/settings` command (v1.0.61+) opens an interactive dialog to browse and edi
 
 The settings dialog supports search — type to filter settings by name. Changes take effect immediately.
 
+In v1.0.70+, `/settings` and `/model` accept `--repo` and `--local` flags to control the scope of the change:
+
+| Flag | Scope | File Modified |
+|------|-------|---------------|
+| *(default)* | User-level | `~/.copilot-cli/config.json` |
+| `--local` | Project-local (not committed) | `.claude/settings.local.json` |
+| `--repo` | Repository (committed, shared) | `.github/copilot/settings.json` |
+
+```
+/settings --repo          # open settings scoped to the repository
+/model --repo             # pin the model for everyone working in this repo
+/model --local            # pin the model only for your local environment
+```
+
+The **`--repo` flag** writes to `.github/copilot/settings.json`, a new trusted repository settings file (v1.0.70+). This file lets you commit model, reasoning effort, and context preferences directly in your repository, so every contributor starts with consistent defaults without any manual configuration. It can also extend the URL, MCP, and skill deny lists for the project:
+
+```json
+// .github/copilot/settings.json
+{
+  "model": "claude-sonnet-4.6",
+  "effortLevel": "high",
+  "denyUrls": ["*.internal.corp.example"],
+  "denyMcpServers": ["untrusted-server"]
+}
+```
+
+This is the recommended way to standardize Copilot CLI behavior across a team — commit this file to version control and everyone gets the same defaults automatically.
+
 GitHub Copilot CLI has two commands for managing session state, with distinct behaviours:
 
 | Command | Behaviour |
@@ -485,6 +513,14 @@ The `/undo` command reverts the last turn—including any file changes the agent
 ```
 
 Use `/undo` when the agent's last response went in an unwanted direction and you want to try a different approach from that point.
+
+The `/refine` command *(v1.0.70+)* lets you edit and re-send your most recent message without retyping it from scratch. It opens the previous prompt in an inline editor so you can adjust wording, add context, or clarify intent — then re-submits it as a fresh turn:
+
+```
+/refine
+```
+
+Use `/refine` when the agent's response was close but not quite right and you want to tweak your original prompt rather than follow up with a correction. Combining `/refine` with `/undo` gives you a tight iteration loop: undo the turn, refine the prompt, and retry.
 
 The `/fork` command (v1.0.45+) copies the current session into a **new independent session** that starts from the same conversation state. The original session continues unchanged — you can switch back to it at any time. This is useful when you want to explore two different approaches to a problem simultaneously. In v1.0.64+, `/branch` is available as an alias for `/fork` (matching Claude Code's command naming):
 
