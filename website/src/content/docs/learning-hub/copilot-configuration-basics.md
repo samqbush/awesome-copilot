@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-07-10
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -415,6 +415,31 @@ These files follow the same format as `config.json` and are loaded after the glo
 
 > **Important (v1.0.36+)**: Custom agents, skills, and commands placed in `~/.claude/` (the Claude Code user directory) are **no longer loaded** by GitHub Copilot CLI. Only `~/.claude/settings.json` is read for configuration. If you previously stored personal agents or skills in `~/.claude/`, move them to the supported locations: `~/.copilot/agents/` for user-level agents, `~/.copilot/skills/` or `~/.agents/skills/` for personal skills, or `.github/agents/` and `.github/skills/` in your repositories for project-level customizations.
 
+### Repository-Pinned Model and Deny Lists (v1.0.70+)
+
+A trusted repository can now enforce specific CLI behaviour for everyone working in it by committing a `.github/copilot/settings.json` file. This file lets you:
+
+- **Pin the model** — ensures everyone uses the same model when working in the repository
+- **Set the effort level** — lock reasoning effort to `low`, `medium`, or `high`
+- **Set the context tier** — control context window size for the session
+- **Extend deny lists** — add repository-specific entries to the URL, MCP server, and skill deny lists
+
+Example `.github/copilot/settings.json`:
+
+```json
+{
+  "model": "claude-sonnet-4.6",
+  "effortLevel": "high",
+  "denyLists": {
+    "urls": ["http://internal-only.corp.example.com"],
+    "mcpServers": ["untrusted-mcp-server"],
+    "skills": ["blocked-skill"]
+  }
+}
+```
+
+These settings apply automatically for any user who has **trusted the repository** (confirmed folder trust). They layer on top of user settings, so the repository can enforce a minimum baseline without preventing users from adding further personal configuration. Use this to keep team AI sessions consistent — particularly useful for security-sensitive or compliance-critical repositories.
+
 ### Model Picker
 
 The model picker opens in a **full-screen view** with inline reasoning effort adjustment. Use the **← / →** arrow keys to change the reasoning effort level (`low`, `medium`, `high`) directly from the picker without leaving the session. The current reasoning effort level is also displayed in the model header (e.g., `claude-sonnet-4.6 (high)`) so you always know which level is active.
@@ -592,6 +617,14 @@ The `/ask` command lets you ask a quick question without affecting your conversa
 /ask What does the `retry` utility in src/utils do?
 ```
 
+The `/refine` command (v1.0.70+) rewrites a rough, stream-of-consciousness prompt into a clear and precise one. Use it when you have a vague idea of what you want but struggle to phrase it concisely:
+
+```
+/refine
+```
+
+After running `/refine`, Copilot proposes a cleaned-up version of your prompt that you can edit, accept, or discard. This is useful before kicking off a long-running agent task — a well-formed prompt leads to more focused, accurate results.
+
 The `/env` command shows all loaded environment details — instructions, MCP servers, skills, agents, and plugins — in a single view. Use it to verify that the right resources are active for the current session:
 
 ```
@@ -688,6 +721,15 @@ copilot --plan          # start in plan mode (propose without executing)
 ```
 
 This is useful in scripts or CI pipelines where you want the CLI to immediately begin working in a specific mode without an interactive prompt.
+
+The `--sandbox` and `--no-sandbox` flags (v1.0.70+) toggle the OS-level shell sandbox on or off for the **current session only**, without changing your saved sandbox setting. This is useful with `-p` (prompt mode) when you need a one-off session with a different sandbox policy:
+
+```bash
+copilot --sandbox -p "Build and test the project"   # enable sandbox for this session
+copilot --no-sandbox -p "Run the deploy script"     # disable sandbox for this session
+```
+
+These flags override your persisted sandbox setting for the duration of the session and then revert. If you want to permanently change your sandbox preference, use `/settings` to update the saved setting instead.
 
 The `--max-autopilot-continues` flag controls how many times Copilot can automatically continue in autopilot mode before pausing for confirmation. The default is 5:
 
