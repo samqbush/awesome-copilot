@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-24
+lastUpdated: 2026-07-10
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -200,6 +200,16 @@ copilot plugin marketplace update
 copilot plugin uninstall my-plugin
 ```
 
+### The /plugins Dashboard (v1.0.69+)
+
+From within an interactive session, the `/plugins` command opens a **full-screen dashboard** for managing all your installed plugins in one place. You can view, enable, disable, and remove plugins without leaving the session:
+
+```
+/plugins
+```
+
+The dashboard shows each installed plugin alongside its source marketplace, status, and the agents, skills, hooks, and MCP servers it contributes. It also lets you **reload installed plugin extensions** without restarting the session — useful during plugin development or after updating a plugin.
+
 ### Loading Plugins from a Local Directory
 
 You can load plugins directly from a local directory without installing them from a marketplace, using the `--plugin-dir` flag when starting Copilot:
@@ -209,6 +219,26 @@ copilot --plugin-dir /path/to/my-plugin
 ```
 
 Plugins loaded this way appear in `/plugin list` under a separate **External Plugins** section, clearly distinguished from marketplace-installed plugins. This is useful for testing local plugins in development or loading private plugins that aren't published to any marketplace.
+
+### Pinning Plugins to an Exact Commit SHA (v1.0.70+)
+
+By default, plugins installed from a marketplace track the latest version. If you need reproducible environments — for example, in CI or for a team with strict dependency management — you can pin a plugin to an exact commit SHA using the `sha` field in its source configuration.
+
+Add the `sha` field alongside the plugin's `source` in your plugin configuration:
+
+```json
+{
+  "plugins": [
+    {
+      "source": "awesome-copilot",
+      "name": "context-engineering",
+      "sha": "abc1234def5678"
+    }
+  ]
+}
+```
+
+With `sha` set, the CLI installs exactly that commit and ignores newer versions. This ensures your team always gets the same plugin behaviour regardless of upstream changes. Remove the `sha` field and run `copilot plugin update` when you're ready to adopt new changes.
 
 ### Where Plugins Are Stored
 
