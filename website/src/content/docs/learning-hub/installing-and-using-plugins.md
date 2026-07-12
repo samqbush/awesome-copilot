@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-24
+lastUpdated: 2026-07-10
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -178,13 +178,39 @@ Or from an interactive session:
 
 > **Deprecation notice**: Installing plugins directly from a GitHub repository URL, raw URL, or local file path (e.g., `copilot plugin install github/awesome-copilot`) is deprecated and will be removed in a future release. Use marketplace-based installation instead.
 
+### Pinning Plugins to an Exact Commit SHA
+
+For reproducible environments where you need guarantees about the exact version of a plugin, you can pin a plugin source to a specific commit SHA (v1.0.70+). Add the `sha` field to the plugin source configuration in your `.github/copilot-settings.json`:
+
+```json
+{
+  "extraKnownMarketplaces": [
+    {
+      "name": "my-org-plugins",
+      "source": "my-org/internal-plugins",
+      "sha": "abc1234def5678..."
+    }
+  ]
+}
+```
+
+When a `sha` is specified, the CLI validates that the resolved plugin commit matches the pinned SHA before loading it. This protects against supply chain drift in shared team environments and CI pipelines.
+
 ### From VS Code
 
 Browse to the plugin via `@agentPlugins` in the Extensions search view or via **Chat: Plugins** in the Command Palette, then click **Install**.
 
 ## Managing Plugins
 
-Once installed, plugins are managed with a few simple commands:
+The `/plugins` dashboard (v1.0.69+) gives you an interactive view of all installed plugins directly from within a Copilot CLI session. Open it with:
+
+```
+/plugins
+```
+
+The dashboard shows each installed plugin, its version, the marketplace it came from, and whether it's enabled. You can enable, disable, update, or remove plugins from this view without leaving the session.
+
+Once installed, plugins are also managed with CLI commands:
 
 ```bash
 # List all installed plugins

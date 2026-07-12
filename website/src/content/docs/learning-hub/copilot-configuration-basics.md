@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-07-10
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -406,12 +406,25 @@ CLI settings use **camelCase** naming. Key settings added in recent releases:
 
 > **Note**: Older snake_case names (e.g., `include_gitignored`, `auto_updates_channel`) are still accepted for backward compatibility, but camelCase is now the preferred format.
 
-In addition to the main config file, GitHub Copilot CLI reads two optional per-project files for repository-specific overrides:
+In addition to the main config file, GitHub Copilot CLI reads several optional per-project files for repository-specific overrides:
 
 - `.claude/settings.json` — committed project settings
 - `.claude/settings.local.json` — local overrides (add to `.gitignore` for personal adjustments)
 
 These files follow the same format as `config.json` and are loaded after the global config, so they can tailor CLI behaviour—including hook definitions—per repository without touching `.github/`.
+
+**Trusted repository settings** (v1.0.70+): A repository can also provide a `.github/copilot/settings.json` file to pin the model, reasoning effort level, and context tier for anyone working in that repository, as well as extend the URL, MCP server, and skill deny lists. This file is only applied when the repository is marked as trusted by the user, giving teams a way to enforce consistent settings without requiring each developer to configure them manually:
+
+```json
+{
+  "model": "claude-sonnet-4.6",
+  "effortLevel": "high",
+  "denyUrls": ["*.internal.example.com"],
+  "denyMcpServers": ["untrusted-server"]
+}
+```
+
+Commit `.github/copilot/settings.json` to version-control alongside your other Copilot configuration. Users are prompted to trust the repository the first time it is loaded.
 
 > **Important (v1.0.36+)**: Custom agents, skills, and commands placed in `~/.claude/` (the Claude Code user directory) are **no longer loaded** by GitHub Copilot CLI. Only `~/.claude/settings.json` is read for configuration. If you previously stored personal agents or skills in `~/.claude/`, move them to the supported locations: `~/.copilot/agents/` for user-level agents, `~/.copilot/skills/` or `~/.agents/skills/` for personal skills, or `.github/agents/` and `.github/skills/` in your repositories for project-level customizations.
 
@@ -431,7 +444,21 @@ The `/settings` command (v1.0.61+) opens an interactive dialog to browse and edi
 /settings
 ```
 
-The settings dialog supports search — type to filter settings by name. Changes take effect immediately.
+The settings dialog supports search — type to filter settings by name. Changes take effect immediately. Use `--repo` and `--local` flags to open the settings dialog scoped to repository-level or local settings respectively:
+
+```
+/settings          # open user settings
+/settings --repo   # open repository settings (v1.0.70+)
+/settings --local  # open local (non-committed) settings (v1.0.70+)
+```
+
+The `/refine` command (v1.0.70+) rewrites a rough, stream-of-consciousness prompt into a clear, well-structured one. Use it when you have a general idea of what you want but struggle to phrase it precisely:
+
+```
+/refine
+```
+
+After running `/refine`, describe your intent in plain language and Copilot will return a polished prompt you can review, edit, and then send. This is especially useful when starting complex tasks where precision matters.
 
 GitHub Copilot CLI has two commands for managing session state, with distinct behaviours:
 
@@ -671,6 +698,15 @@ gh copilot --effort high "Refactor the authentication module"
 Accepted values are `low`, `medium`, and `high`. You can also set a default via the `effortLevel` config setting.
 
 ### CLI Startup Flags
+
+The `--sandbox` and `--no-sandbox` flags (v1.0.70+) toggle the OS-level shell sandbox on or off for the current session only, without changing your saved sandbox setting. This is useful with `-p` (prompt mode) when you need to override the default sandbox behavior for a single run:
+
+```bash
+copilot --sandbox     # enable the OS-level sandbox for this session
+copilot --no-sandbox  # disable the OS-level sandbox for this session
+```
+
+Unlike changing the sandbox setting in `/settings`, these flags apply only to the current invocation. Any sandbox state you configure via `/settings` is preserved for future sessions.
 
 The `-C <directory>` flag changes the working directory before starting, similar to `git -C` (v1.0.42+). This is useful for scripts or aliases that need to start Copilot CLI in a specific project directory without a separate `cd`:
 
