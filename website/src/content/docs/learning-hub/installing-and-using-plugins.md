@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-24
+lastUpdated: 2026-07-13
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -178,6 +178,25 @@ Or from an interactive session:
 
 > **Deprecation notice**: Installing plugins directly from a GitHub repository URL, raw URL, or local file path (e.g., `copilot plugin install github/awesome-copilot`) is deprecated and will be removed in a future release. Use marketplace-based installation instead.
 
+### Pinning Plugins to a Specific Commit SHA
+
+For reproducible, auditable environments you can pin a marketplace plugin source to an exact commit SHA (v1.0.70+). Add the `sha` field alongside the `ref` in your plugin source configuration:
+
+```json
+{
+  "extraKnownMarketplaces": [
+    {
+      "name": "my-org-plugins",
+      "source": "my-org/internal-plugins",
+      "ref": "v2.1.0",
+      "sha": "a3f1c9b8d2e04f75..."
+    }
+  ]
+}
+```
+
+When both `ref` and `sha` are provided, the CLI verifies that the ref resolves to the exact SHA, preventing supply-chain attacks where a tag is silently moved to a different commit.
+
 ### From VS Code
 
 Browse to the plugin via `@agentPlugins` in the Extensions search view or via **Chat: Plugins** in the Command Palette, then click **Install**.
@@ -199,6 +218,16 @@ copilot plugin marketplace update
 # Remove a plugin
 copilot plugin uninstall my-plugin
 ```
+
+### The /plugins Dashboard
+
+From inside an interactive Copilot session, use the `/plugins` command to open a built-in dashboard for managing all installed plugins (v1.0.69+):
+
+```
+/plugins
+```
+
+The `/plugins` dashboard gives you a visual overview of installed plugins and lets you reload plugin extensions without restarting the session. This is especially useful after updating a plugin — you no longer need to exit and restart Copilot for changes to take effect.
 
 ### Loading Plugins from a Local Directory
 
