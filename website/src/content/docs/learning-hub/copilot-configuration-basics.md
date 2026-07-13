@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-07-13
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -423,6 +423,20 @@ The model picker opens in a **full-screen view** with inline reasoning effort ad
 
 **Model family aliases** (v1.0.64+): Instead of typing a full model name, you can use short family aliases in the model setting: `opus`, `sonnet`, `haiku` (Anthropic), and `gpt`, `gemini` (Google/OpenAI). The CLI resolves the alias to the latest available model in that family. This is especially useful in scripts or configuration files where you want to track the best model in a family without hardcoding a version string.
 
+**Repository-managed model settings** (v1.0.70+): A trusted repository can pin the model, reasoning-effort level, context tier, and extend the URL/MCP/skill deny lists for all sessions opened in that repository. Add a `.github/copilot/settings.json` file to your repository:
+
+```json
+{
+  "model": "claude-sonnet-4.6",
+  "effortLevel": "high",
+  "contextTier": "long_context"
+}
+```
+
+When Copilot detects this file in a trusted repository, it applies these settings automatically at session start. This is useful for teams that want to standardise which model is used in a project — for example, to ensure high reasoning effort on a security-sensitive codebase, or to lock the context tier for large monorepos. Individual users can still override their own session settings with `/model` or `/settings`, but the repository defaults are applied first.
+
+> **Note**: The `--repo` and `--local` flags on `/settings` and `/model` let you view or edit the repository-scoped and local-scoped settings separately (v1.0.70+).
+
 ### CLI Session Commands
 
 The `/settings` command (v1.0.61+) opens an interactive dialog to browse and edit all user settings in one place. Use it to discover available settings, toggle options, and update values without manually editing your config file:
@@ -485,6 +499,14 @@ The `/undo` command reverts the last turn—including any file changes the agent
 ```
 
 Use `/undo` when the agent's last response went in an unwanted direction and you want to try a different approach from that point.
+
+The `/refine` command (v1.0.70+) rewrites a rough, stream-of-consciousness prompt into a clear, well-structured one. Type your initial idea as-is, then run `/refine` to get a polished version you can review and send:
+
+```
+/refine
+```
+
+This is useful when you know what you want but haven't yet articulated it precisely — `/refine` acts as a prompt editor, improving clarity without losing your intent. Review the refined prompt before submitting it.
 
 The `/fork` command (v1.0.45+) copies the current session into a **new independent session** that starts from the same conversation state. The original session continues unchanged — you can switch back to it at any time. This is useful when you want to explore two different approaches to a problem simultaneously. In v1.0.64+, `/branch` is available as an alias for `/fork` (matching Claude Code's command naming):
 
