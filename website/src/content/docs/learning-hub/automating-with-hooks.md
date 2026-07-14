@@ -3,7 +3,7 @@ title: 'Automating with Hooks'
 description: 'Learn how to use hooks to automate lifecycle events like formatting, linting, and governance checks during Copilot agent sessions.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-25
+lastUpdated: 2026-07-14
 estimatedReadingTime: '8 minutes'
 tags:
   - hooks
@@ -391,6 +391,8 @@ Block dangerous commands before they execute. Use the `matcher` field to target 
 ```
 
 The `preToolUse` hook receives JSON input with details about the tool being called. Your script can inspect this input and exit with a non-zero code to **deny** the tool execution, or exit with zero to **approve** it.
+
+> **Exit code 2 — deny tool calls** *(v1.0.70+)*: When a `preToolUse` hook exits with **code 2**, the tool call is explicitly denied and the agent receives a clear denial signal. Using exit code 2 is the recommended way to block a specific tool call from a `preToolUse` hook. Any other non-zero exit code also blocks the action, but code 2 provides the most precise semantics for tool-call denial.
 
 ### Modifying Tool Arguments with preToolUse
 
