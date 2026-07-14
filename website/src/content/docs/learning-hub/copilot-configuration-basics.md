@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-07-14
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -423,6 +423,18 @@ The model picker opens in a **full-screen view** with inline reasoning effort ad
 
 **Model family aliases** (v1.0.64+): Instead of typing a full model name, you can use short family aliases in the model setting: `opus`, `sonnet`, `haiku` (Anthropic), and `gpt`, `gemini` (Google/OpenAI). The CLI resolves the alias to the latest available model in that family. This is especially useful in scripts or configuration files where you want to track the best model in a family without hardcoding a version string.
 
+**Repository-pinned model settings** *(v1.0.70+)*: A trusted repository can pin the model, reasoning effort level, and context tier — and extend the URL/MCP/skill deny lists — via `.github/copilot/settings.json`. This gives repository maintainers fine-grained control over the AI model and behavior used when contributors work in the repository:
+
+```json
+{
+  "model": "claude-sonnet-4",
+  "reasoningEffort": "high",
+  "contextTier": "long_context"
+}
+```
+
+These settings apply automatically when the repository is trusted. Individual users can still override them for their own sessions, but the repository-level defaults ensure consistent behavior for the team. This is especially useful for repositories where specific model capabilities are required (e.g., a repository that relies on large context windows or high reasoning effort for accurate results).
+
 ### CLI Session Commands
 
 The `/settings` command (v1.0.61+) opens an interactive dialog to browse and edit all user settings in one place. Use it to discover available settings, toggle options, and update values without manually editing your config file:
@@ -478,6 +490,14 @@ The `/rewind` command opens a timeline picker that lets you roll back the conver
 
 Use `/rewind` when you want to branch off from a different point in the conversation, rather than just undoing the most recent turn.
 
+The `/refine` command *(v1.0.70+)* rewrites a rough, stream-of-consciousness prompt into a clear, well-structured one. Use it when you have a vague idea of what you want to ask but want Copilot to help sharpen it before responding:
+
+```
+/refine fix the login thing its broken again and also the signup doesnt work
+```
+
+The command generates a refined version of your prompt and shows it for your review. Accept it to use the improved prompt, or continue editing. This is especially useful when you're not sure how to frame a complex request.
+
 The `/undo` command reverts the last turn—including any file changes the agent made—letting you course-correct without manually undoing edits:
 
 ```
@@ -504,11 +524,19 @@ The `/cd` command changes the working directory for the current session. Since v
 
 This is useful when you have multiple backgrounded sessions each focused on a different project directory.
 
-The `/worktree` command (v1.0.61+, also aliased `/move`) creates a new git worktree and switches into it, moving any uncommitted changes along. This lets you start working on a parallel branch without leaving your current terminal session:
+The `/worktree` command (v1.0.61+) creates a new git worktree and switches into it, **leaving your uncommitted changes behind** in the current worktree. This lets you start clean work on a parallel branch without carrying over unfinished changes:
 
 ```
 /worktree my-feature-branch
 ```
+
+The companion `/move` command *(v1.0.71+)* also creates a new worktree, but **carries your uncommitted changes into it** — useful when you've started work and want to move it to its own branch:
+
+```
+/move my-feature-branch
+```
+
+> **Changed in v1.0.71**: Prior to v1.0.71, `/worktree` was aliased to `/move` and always moved uncommitted changes along. They are now separate commands with distinct behavior. If you relied on `/worktree` to carry changes, switch to `/move`.
 
 In v1.0.66+, you can pass a task description to `/worktree` to name the branch from the task and immediately run the task as the first prompt in the new worktree — all in one step:
 
@@ -696,6 +724,15 @@ copilot --autopilot --max-autopilot-continues 10 "Refactor the authentication mo
 ```
 
 Set it higher for long-running tasks, or lower for tasks where you want more frequent checkpoints. Setting it to `0` disables automatic continuation entirely.
+
+The `--sandbox` and `--no-sandbox` flags *(v1.0.70+)* toggle the OS-level shell sandbox on or off for the current session only, without changing your saved sandbox setting. This is useful when running in `-p` (prompt) mode and you need to temporarily enable or disable sandboxing for a specific automated task:
+
+```bash
+copilot --sandbox -p "Run the build and tests"      # force sandbox on for this run
+copilot --no-sandbox -p "Run the build and tests"   # force sandbox off for this run
+```
+
+These flags do not affect your persistent sandbox preference — they only apply to the session they're used in.
 
 The `--attachment` flag (available in prompt mode, `-p`) lets you attach files — images or native documents — to the initial prompt in non-interactive mode:
 

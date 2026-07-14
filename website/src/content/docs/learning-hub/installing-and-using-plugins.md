@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-24
+lastUpdated: 2026-07-14
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -199,6 +199,20 @@ copilot plugin marketplace update
 # Remove a plugin
 copilot plugin uninstall my-plugin
 ```
+
+### Pinning a Plugin to a Specific Commit
+
+By default, plugins install from the latest version of their source. You can pin a plugin to an exact commit SHA using the `sha` field in the plugin source configuration *(v1.0.70+)*. This ensures reproducible installs and prevents unexpected updates from breaking your workflow:
+
+```json
+{
+  "name": "my-org-plugins",
+  "source": "my-org/internal-plugins",
+  "sha": "a1b2c3d4e5f6..."
+}
+```
+
+Add the `sha` field alongside `source` in your marketplace or plugin configuration to lock to that exact revision. To update, change the SHA to the desired commit.
 
 ### Loading Plugins from a Local Directory
 
