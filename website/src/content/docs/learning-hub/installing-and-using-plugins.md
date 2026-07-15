@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-24
+lastUpdated: 2026-07-15
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -159,6 +159,24 @@ To automatically register an additional marketplace for everyone working in a re
 ```
 
 With this in place, team members automatically get the `my-org-plugins` marketplace available without running a separate `marketplace add` command. This replaces the older `marketplaces` setting, which was removed in v1.0.16.
+
+### Pinning a Plugin to a Specific Commit (v1.0.70+)
+
+For reproducible environments, you can pin a marketplace plugin to an exact commit SHA using the `sha` field in its plugin source configuration:
+
+```json
+{
+  "extraKnownMarketplaces": [
+    {
+      "name": "my-org-plugins",
+      "source": "my-org/internal-plugins",
+      "sha": "abc1234def5678..."
+    }
+  ]
+}
+```
+
+Pinning ensures your team always uses a verified version of the plugin, even if the upstream marketplace is updated. This is especially useful in CI environments or security-sensitive codebases where unreviewed plugin updates could introduce unexpected behaviour.
 
 ## Installing Plugins
 
