@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-07-16
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -413,6 +413,23 @@ In addition to the main config file, GitHub Copilot CLI reads two optional per-p
 
 These files follow the same format as `config.json` and are loaded after the global config, so they can tailor CLI behaviour—including hook definitions—per repository without touching `.github/`.
 
+### Repository-Pinned Session Settings (v1.0.70+)
+
+A trusted repository can pin the default model, effort level, and context tier for sessions that work in that repository by placing a `.github/copilot/settings.json` file. It can also extend the URL, MCP server, and skill deny lists:
+
+```json
+{
+  "model": "claude-sonnet-4.6",
+  "effortLevel": "high",
+  "contextTier": "large",
+  "denyUrls": ["*.internal.example.com"],
+  "denyMcpServers": ["untrusted-server"],
+  "denySkills": ["experimental-skill"]
+}
+```
+
+This is distinct from the `.claude/settings.json` project file — `.github/copilot/settings.json` is specifically for repository-enforced defaults and restrictions that apply to any CLI session started in that repository. Use it to ensure all team members and agents use consistent settings when working on the project.
+
 > **Important (v1.0.36+)**: Custom agents, skills, and commands placed in `~/.claude/` (the Claude Code user directory) are **no longer loaded** by GitHub Copilot CLI. Only `~/.claude/settings.json` is read for configuration. If you previously stored personal agents or skills in `~/.claude/`, move them to the supported locations: `~/.copilot/agents/` for user-level agents, `~/.copilot/skills/` or `~/.agents/skills/` for personal skills, or `.github/agents/` and `.github/skills/` in your repositories for project-level customizations.
 
 ### Model Picker
@@ -504,11 +521,19 @@ The `/cd` command changes the working directory for the current session. Since v
 
 This is useful when you have multiple backgrounded sessions each focused on a different project directory.
 
-The `/worktree` command (v1.0.61+, also aliased `/move`) creates a new git worktree and switches into it, moving any uncommitted changes along. This lets you start working on a parallel branch without leaving your current terminal session:
+The `/worktree` command (v1.0.61+) creates a new git worktree and switches into it, **leaving your uncommitted changes behind** in the current worktree. This lets you start a clean parallel branch while keeping your in-progress work intact:
 
 ```
 /worktree my-feature-branch
 ```
+
+The companion `/move` command (v1.0.71+) does the opposite — it creates a new worktree and **carries your uncommitted changes** into it. Use `/move` when you want to continue your current work on a fresh branch:
+
+```
+/move my-feature-branch
+```
+
+> **Note (v1.0.71+)**: `/worktree` and `/move` now have distinct behaviors. In earlier versions (v1.0.61–v1.0.70), `/worktree` was aliased to `/move` and both moved uncommitted changes along. After upgrading, use `/move` if you want to carry changes into the new worktree.
 
 In v1.0.66+, you can pass a task description to `/worktree` to name the branch from the task and immediately run the task as the first prompt in the new worktree — all in one step:
 
@@ -518,7 +543,7 @@ In v1.0.66+, you can pass a task description to `/worktree` to name the branch f
 
 This creates a branch named from your task description and begins working on it immediately, making it easy to spin up parallel work without stopping to think of a branch name.
 
-After the command runs, the session is inside the new worktree. Use this when you want to work on a second task in parallel without stashing changes or opening a new terminal. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins.
+After the command runs, the session is inside the new worktree. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins.
 
 The `/every` command (also available as `/loop` since v1.0.64) schedules a recurring prompt to run automatically at a specified interval. The companion `/after` command runs a prompt once after a specified delay. Both are useful for self-paced automation — polling for results, periodically summarizing progress, or triggering other slash commands on a timer:
 
@@ -569,6 +594,14 @@ The `/chronicle skills review` subcommand *(v1.0.66+)* opens an interactive revi
 This keeps you in control of skill evolution — the agent can propose skill improvements as it discovers reusable patterns, but nothing is applied until you explicitly approve each change.
 
 > **Note**: Session history, file tracking, and the `/chronicle` command were previously experimental features. As of v1.0.40, they are available to all users without enabling experimental mode.
+
+The `/refine` command *(v1.0.70+)* rewrites a rough, stream-of-consciousness prompt into a clear, well-structured one. If you've jotted down a loose idea and want to turn it into an effective prompt before sending, use `/refine` to clean it up:
+
+```
+/refine
+```
+
+Start typing your rough idea, then invoke `/refine` to have the agent rewrite it for clarity. This is especially helpful when you know what you want but struggle to articulate it precisely.
 
 The `/diagnose` command (v1.0.64+) analyzes the current session's logs and surfaces diagnostic information to help troubleshoot unexpected behavior, performance issues, or errors:
 
@@ -686,6 +719,8 @@ copilot --mode agent    # start in agent mode (autonomous tool use)
 copilot --autopilot     # alias for --mode autopilot (allow-all)
 copilot --plan          # start in plan mode (propose without executing)
 ```
+
+> **Plan mode hard-blocks mutations (v1.0.71+)**: Plan mode now **prevents the agent from making changes to your workspace** — file edits and mutating shell commands are blocked at the tool level, not just discouraged by instructions. Built-in write operations (such as opening a pull request) are also blocked. MCP tool calls and external tools are still allowed. This ensures plan mode is truly read-only, so you can safely review a proposed plan without risk of accidental side effects.
 
 This is useful in scripts or CI pipelines where you want the CLI to immediately begin working in a specific mode without an interactive prompt.
 
