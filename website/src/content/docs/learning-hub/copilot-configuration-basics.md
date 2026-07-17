@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-07-17
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -414,6 +414,34 @@ In addition to the main config file, GitHub Copilot CLI reads two optional per-p
 These files follow the same format as `config.json` and are loaded after the global config, so they can tailor CLI behaviour—including hook definitions—per repository without touching `.github/`.
 
 > **Important (v1.0.36+)**: Custom agents, skills, and commands placed in `~/.claude/` (the Claude Code user directory) are **no longer loaded** by GitHub Copilot CLI. Only `~/.claude/settings.json` is read for configuration. If you previously stored personal agents or skills in `~/.claude/`, move them to the supported locations: `~/.copilot/agents/` for user-level agents, `~/.copilot/skills/` or `~/.agents/skills/` for personal skills, or `.github/agents/` and `.github/skills/` in your repositories for project-level customizations.
+
+### Repository-Pinned Model and Security Settings (v1.0.70+)
+
+Trusted repositories can pin the AI model, reasoning effort level, and context tier for all users, and can extend the URL, MCP, and skill deny lists by adding a `.github/copilot/settings.json` file to the repository:
+
+```json
+{
+  "model": "claude-sonnet-4.6",
+  "effortLevel": "high",
+  "contextTier": "large",
+  "denyUrls": ["*.internal.example.com"],
+  "denyMcpServers": ["untrusted-server"],
+  "denySkills": ["risky-skill"]
+}
+```
+
+**Supported fields**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `model` | string | Pinned model name (or alias) for all sessions in this repository |
+| `effortLevel` | string | Reasoning effort: `low`, `medium`, or `high` |
+| `contextTier` | string | Context window tier for sessions in this repository |
+| `denyUrls` | array | Additional URL patterns to block (extends the global deny list) |
+| `denyMcpServers` | array | MCP server names to block in this repository |
+| `denySkills` | array | Skill names to block in this repository |
+
+> **Security note**: The repository must be in a trusted folder for `.github/copilot/settings.json` to take effect. This provides a secure way for repository owners to enforce consistent model choices and security boundaries across all contributors without requiring individual configuration.
 
 ### Model Picker
 
