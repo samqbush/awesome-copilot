@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-07-18
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -423,6 +423,18 @@ The model picker opens in a **full-screen view** with inline reasoning effort ad
 
 **Model family aliases** (v1.0.64+): Instead of typing a full model name, you can use short family aliases in the model setting: `opus`, `sonnet`, `haiku` (Anthropic), and `gpt`, `gemini` (Google/OpenAI). The CLI resolves the alias to the latest available model in that family. This is especially useful in scripts or configuration files where you want to track the best model in a family without hardcoding a version string.
 
+**Repository-pinned model and effort settings** (v1.0.70+): A trusted repository can pin the model, reasoning effort level, and context tier for all sessions, as well as extend the URL, MCP, and skill deny lists, via `.github/copilot/settings.json`:
+
+```json
+{
+  "model": "claude-sonnet-4.6",
+  "reasoningEffort": "high",
+  "contextTier": "auto"
+}
+```
+
+This file is read when the CLI trusts the repository (based on your folder trust configuration). Repository-pinned settings take precedence over user settings, making it useful for teams that want to enforce a consistent model and effort level across all contributors without each person configuring it manually.
+
 ### CLI Session Commands
 
 The `/settings` command (v1.0.61+) opens an interactive dialog to browse and edit all user settings in one place. Use it to discover available settings, toggle options, and update values without manually editing your config file:
@@ -504,11 +516,19 @@ The `/cd` command changes the working directory for the current session. Since v
 
 This is useful when you have multiple backgrounded sessions each focused on a different project directory.
 
-The `/worktree` command (v1.0.61+, also aliased `/move`) creates a new git worktree and switches into it, moving any uncommitted changes along. This lets you start working on a parallel branch without leaving your current terminal session:
+The `/worktree` command (v1.0.61+) creates a new git worktree and switches into it, **leaving your uncommitted changes behind** in the current worktree. This is useful when you want to start a parallel branch with a clean slate while preserving in-progress work where it is:
 
 ```
 /worktree my-feature-branch
 ```
+
+The `/move` command (v1.0.71+) works similarly but **carries your uncommitted changes with you** into the new worktree — useful when you realize mid-task that your changes belong on a different branch:
+
+```
+/move my-feature-branch
+```
+
+> **Note (v1.0.71+)**: Prior to v1.0.71, `/worktree` and `/move` were aliases for the same command (which always moved uncommitted changes). They are now distinct: `/worktree` leaves changes behind, `/move` carries them forward. If you have scripts or muscle memory using them interchangeably, update accordingly.
 
 In v1.0.66+, you can pass a task description to `/worktree` to name the branch from the task and immediately run the task as the first prompt in the new worktree — all in one step:
 
@@ -518,7 +538,7 @@ In v1.0.66+, you can pass a task description to `/worktree` to name the branch f
 
 This creates a branch named from your task description and begins working on it immediately, making it easy to spin up parallel work without stopping to think of a branch name.
 
-After the command runs, the session is inside the new worktree. Use this when you want to work on a second task in parallel without stashing changes or opening a new terminal. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins.
+After the command runs, the session is inside the new worktree. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins.
 
 The `/every` command (also available as `/loop` since v1.0.64) schedules a recurring prompt to run automatically at a specified interval. The companion `/after` command runs a prompt once after a specified delay. Both are useful for self-paced automation — polling for results, periodically summarizing progress, or triggering other slash commands on a timer:
 
@@ -585,6 +605,14 @@ Use `/diagnose` when a session is behaving unexpectedly — it inspects session 
 **Shell command history in normal mode** (v1.0.65+): The **↑/↓** arrow keys and **Ctrl+R** reverse search now include past shell commands (commands run with `!`) while you are in normal (non-shell) input mode. Previously you had to type `!` to enter shell mode before history worked. Now you can recall and re-run a shell command without switching modes first — useful for quickly repeating a build, test, or diagnostic command from earlier in the session.
 
 **Inline image rendering** (v1.0.64+): The CLI can display images inline in the terminal when your terminal supports it. If an MCP tool, agent, or attachment returns an image, it is rendered directly in the conversation timeline rather than shown as a file path or URL. This works in terminals with image protocol support (such as iTerm2, Kitty, Wezterm, and tmux with appropriate configuration).
+
+The `/refine` command (v1.0.70+) rewrites a rough, stream-of-consciousness prompt into a clear and well-structured one. Use it when you have a vague idea of what you want but struggle to express it precisely:
+
+```
+/refine
+```
+
+After you invoke `/refine`, type or paste your rough prompt and the CLI will rephrase it for clarity and specificity before sending it to the model. This is especially useful when context-switching rapidly between tasks or when working on a complex problem where articulating the exact requirement takes effort.
 
 The `/ask` command lets you ask a quick question without affecting your conversation history. The current session context is preserved, so you can use it for one-off lookups without derailing an ongoing task. Responses are rendered as full markdown, including tables and formatted links:
 
@@ -688,6 +716,8 @@ copilot --plan          # start in plan mode (propose without executing)
 ```
 
 This is useful in scripts or CI pipelines where you want the CLI to immediately begin working in a specific mode without an interactive prompt.
+
+> **Plan mode safety (v1.0.71+)**: Plan mode now **hard-blocks** built-in tool calls that would modify the workspace. While in plan mode, the agent cannot edit files or run mutating shell commands — only read-only operations are permitted. Built-in mutators like opening a pull request are also blocked; MCP and external tools are still allowed. This makes plan mode a safe way to review the agent's proposed approach before any changes are made.
 
 The `--max-autopilot-continues` flag controls how many times Copilot can automatically continue in autopilot mode before pausing for confirmation. The default is 5:
 
