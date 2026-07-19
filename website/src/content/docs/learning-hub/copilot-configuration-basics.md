@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-07-19
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -404,6 +404,18 @@ CLI settings use **camelCase** naming. Key settings added in recent releases:
 | `sessionLimits` | Restrict credit or turn usage for a session; limits apply across the current conversation and reset on `/clear` (v1.0.66+) |
 | `stayInAutopilot` | Keep the CLI in autopilot mode after an autopilot task completes, instead of returning to interactive mode (v1.0.69+) |
 
+> **Repository model pinning (v1.0.70+)**: A trusted repository can pin the model, reasoning effort level, and context tier for all sessions started in that repository by adding a `.github/copilot/settings.json` file. The repository can also extend the URL and MCP tool deny lists from this file. Settings in `.github/copilot/settings.json` apply on top of the user's global config and override user preferences where they overlap — useful for enforcing a specific model or capability set across a team:
+>
+> ```json
+> {
+>   "model": "claude-sonnet-4.6",
+>   "effortLevel": "high",
+>   "contextTier": "large"
+> }
+> ```
+>
+> Use `--repo` and `--local` flags with `/settings` and `/model` to view or edit repo-scoped and local-scoped settings directly from within a session (v1.0.70+).
+
 > **Note**: Older snake_case names (e.g., `include_gitignored`, `auto_updates_channel`) are still accepted for backward compatibility, but camelCase is now the preferred format.
 
 In addition to the main config file, GitHub Copilot CLI reads two optional per-project files for repository-specific overrides:
@@ -504,10 +516,14 @@ The `/cd` command changes the working directory for the current session. Since v
 
 This is useful when you have multiple backgrounded sessions each focused on a different project directory.
 
-The `/worktree` command (v1.0.61+, also aliased `/move`) creates a new git worktree and switches into it, moving any uncommitted changes along. This lets you start working on a parallel branch without leaving your current terminal session:
+The `/worktree` command (v1.0.61+, previously aliased `/move`) creates a new git worktree and switches into it. In v1.0.71+, `/worktree` and `/move` were split into separate commands with distinct behaviors:
+
+- **`/worktree`** — creates a new worktree and **leaves your uncommitted changes behind** in the current worktree. Use this when you want to start clean on a new branch without carrying over in-progress work.
+- **`/move`** — carries your uncommitted changes **into** the new worktree. Use this when you want to continue the work you've already started, but in a different branch.
 
 ```
-/worktree my-feature-branch
+/worktree my-feature-branch    # create new worktree, leave changes behind
+/move my-feature-branch        # create new worktree, bring uncommitted changes along
 ```
 
 In v1.0.66+, you can pass a task description to `/worktree` to name the branch from the task and immediately run the task as the first prompt in the new worktree — all in one step:
@@ -591,6 +607,14 @@ The `/ask` command lets you ask a quick question without affecting your conversa
 ```
 /ask What does the `retry` utility in src/utils do?
 ```
+
+The `/refine` command (v1.0.70+) rewrites a rough, stream-of-consciousness prompt into a clear, well-structured one before you send it to the model. It's useful when you have a general idea but want to articulate it more precisely without spending time manually editing:
+
+```
+/refine
+```
+
+After you run `/refine`, review the rewritten prompt and send it (or keep editing) when you're satisfied. This is especially helpful for complex requests where vague wording often leads to off-target responses.
 
 The `/env` command shows all loaded environment details — instructions, MCP servers, skills, agents, and plugins — in a single view. Use it to verify that the right resources are active for the current session:
 

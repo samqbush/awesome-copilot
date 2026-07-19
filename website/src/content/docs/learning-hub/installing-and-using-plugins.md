@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-24
+lastUpdated: 2026-07-19
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -200,6 +200,34 @@ copilot plugin marketplace update
 copilot plugin uninstall my-plugin
 ```
 
+### /plugins Dashboard (v1.0.69+)
+
+The `/plugins` command opens an interactive dashboard inside a Copilot CLI session to browse, enable, disable, and manage all installed plugins — without leaving your terminal:
+
+```
+/plugins
+```
+
+Use the dashboard to see which plugins are active for the current session, toggle individual plugins on or off, and inspect what each plugin contributes (agents, skills, hooks, MCP servers).
+
+### Pinning Plugins to a Specific Commit
+
+When reliability is important — for example in a CI environment or a team setup where you need reproducible behavior — you can pin a plugin to an exact commit SHA. Add a `sha` field to the plugin's source configuration:
+
+```json
+{
+  "extraKnownMarketplaces": [
+    {
+      "name": "my-org-plugins",
+      "source": "my-org/internal-plugins",
+      "sha": "a1b2c3d4e5f6..."
+    }
+  ]
+}
+```
+
+This prevents the plugin from updating to a newer commit until you explicitly change the SHA, giving you reproducible, auditable plugin versions. (v1.0.70+)
+
 ### Loading Plugins from a Local Directory
 
 You can load plugins directly from a local directory without installing them from a marketplace, using the `--plugin-dir` flag when starting Copilot:
@@ -225,6 +253,8 @@ When you install a plugin, its components become available to Copilot CLI automa
 - **MCP servers** extend the tools available to agents
 
 You don't need to do any additional configuration after installing — the plugin's components integrate seamlessly into your workflow. Plugins take effect immediately after installation without requiring a Copilot CLI restart.
+
+> **Repo-enabled plugins (v1.0.71+)**: Plugins that a repository has enabled are shown in `/plugin list` alongside your globally installed plugins, so you always have a complete picture of what's active for the current project.
 
 ## Plugins from This Repository
 
