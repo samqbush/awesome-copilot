@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-07-20
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -423,6 +423,20 @@ The model picker opens in a **full-screen view** with inline reasoning effort ad
 
 **Model family aliases** (v1.0.64+): Instead of typing a full model name, you can use short family aliases in the model setting: `opus`, `sonnet`, `haiku` (Anthropic), and `gpt`, `gemini` (Google/OpenAI). The CLI resolves the alias to the latest available model in that family. This is especially useful in scripts or configuration files where you want to track the best model in a family without hardcoding a version string.
 
+**Repository-pinned model settings** (v1.0.70+): A trusted repository can pin the model, reasoning effort level, and context tier for all sessions opened from it by adding a `.github/copilot/settings.json` file:
+
+```json
+{
+  "model": "claude-sonnet-4.6",
+  "reasoningEffort": "high",
+  "contextTier": "large"
+}
+```
+
+This file can also extend the URL, MCP, and skill deny lists at the repository level. Repository pins apply automatically when you open the repository, ensuring your team uses a consistent model configuration without manual setup.
+
+> **Note**: Repository settings are applied only from *trusted* repositories. Copilot will prompt you to trust a repository the first time you open it if it contains a `settings.json` with recognized settings.
+
 ### CLI Session Commands
 
 The `/settings` command (v1.0.61+) opens an interactive dialog to browse and edit all user settings in one place. Use it to discover available settings, toggle options, and update values without manually editing your config file:
@@ -504,7 +518,7 @@ The `/cd` command changes the working directory for the current session. Since v
 
 This is useful when you have multiple backgrounded sessions each focused on a different project directory.
 
-The `/worktree` command (v1.0.61+, also aliased `/move`) creates a new git worktree and switches into it, moving any uncommitted changes along. This lets you start working on a parallel branch without leaving your current terminal session:
+The `/worktree` command (v1.0.61+) creates a new git worktree and switches into it, **leaving your uncommitted changes behind** in the original worktree. This is ideal when you want to start fresh on a parallel task:
 
 ```
 /worktree my-feature-branch
@@ -517,6 +531,14 @@ In v1.0.66+, you can pass a task description to `/worktree` to name the branch f
 ```
 
 This creates a branch named from your task description and begins working on it immediately, making it easy to spin up parallel work without stopping to think of a branch name.
+
+The `/move` command (v1.0.71+) is a companion that creates a new git worktree and **carries your uncommitted changes into it**. Use `/move` when you want to continue in-progress work on a fresh branch:
+
+```
+/move my-feature-branch
+```
+
+Use `/worktree` to start a parallel task from a clean slate, and `/move` to carry your current changes into a new branch.
 
 After the command runs, the session is inside the new worktree. Use this when you want to work on a second task in parallel without stashing changes or opening a new terminal. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins.
 
