@@ -3,7 +3,7 @@ title: 'Agents and Subagents'
 description: 'Learn how delegated subagents differ from primary agents, when to use them, and how to launch them in VS Code and Copilot CLI.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-01
+lastUpdated: 2026-07-22
 estimatedReadingTime: '9 minutes'
 tags:
   - agents
@@ -196,7 +196,9 @@ If you share agent files across surfaces, document those differences so users kn
 
 ## Common questions
 
-**Do users always invoke subagents directly?**
+**Can I send follow-up messages to a running subagent?**
+
+Yes (v1.0.72+). Multi-turn subagents are always enabled — you can send follow-up messages to a subagent while it is still running. Previously this required experimental mode.
 
 No. Most of the time the main agent launches them when it decides the task benefits from context isolation or parallelism.
 

@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-07-22
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -423,6 +423,15 @@ The model picker opens in a **full-screen view** with inline reasoning effort ad
 
 **Model family aliases** (v1.0.64+): Instead of typing a full model name, you can use short family aliases in the model setting: `opus`, `sonnet`, `haiku` (Anthropic), and `gpt`, `gemini` (Google/OpenAI). The CLI resolves the alias to the latest available model in that family. This is especially useful in scripts or configuration files where you want to track the best model in a family without hardcoding a version string.
 
+**Per-session model override** (v1.0.72+): Use `/model --session` (or `/model -s`) to change the model, reasoning effort, or context window for the current session only, without touching your global settings. This is useful when you want to temporarily try a more capable model for a complex task:
+
+```
+/model --session claude-opus-4-5
+/model -s gemini high          # switch to Gemini with high reasoning effort for this session
+```
+
+When the session ends, your global model setting is unchanged.
+
 ### CLI Session Commands
 
 The `/settings` command (v1.0.61+) opens an interactive dialog to browse and edit all user settings in one place. Use it to discover available settings, toggle options, and update values without manually editing your config file:
@@ -504,11 +513,17 @@ The `/cd` command changes the working directory for the current session. Since v
 
 This is useful when you have multiple backgrounded sessions each focused on a different project directory.
 
-The `/worktree` command (v1.0.61+, also aliased `/move`) creates a new git worktree and switches into it, moving any uncommitted changes along. This lets you start working on a parallel branch without leaving your current terminal session:
+The `/worktree` and `/move` commands (v1.0.71+) let you work on parallel branches without leaving your current terminal session, but they differ in how they handle uncommitted changes:
+
+- **`/worktree`** — Creates a new git worktree and switches into it, **leaving your uncommitted changes behind** in the current worktree. Use this when you want a clean slate in the new branch.
+- **`/move`** — Creates a new git worktree and **carries your uncommitted changes** into it. Use this when you've started work and want to move it to a proper branch.
 
 ```
-/worktree my-feature-branch
+/worktree my-feature-branch    # new worktree, uncommitted changes stay behind
+/move my-feature-branch        # new worktree, uncommitted changes move with you
 ```
+
+> **Note**: Prior to v1.0.71, `/move` was an alias for `/worktree` (both carried uncommitted changes). They are now distinct commands with different behaviors.
 
 In v1.0.66+, you can pass a task description to `/worktree` to name the branch from the task and immediately run the task as the first prompt in the new worktree — all in one step:
 
@@ -518,7 +533,7 @@ In v1.0.66+, you can pass a task description to `/worktree` to name the branch f
 
 This creates a branch named from your task description and begins working on it immediately, making it easy to spin up parallel work without stopping to think of a branch name.
 
-After the command runs, the session is inside the new worktree. Use this when you want to work on a second task in parallel without stashing changes or opening a new terminal. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins.
+After the command runs, the session is inside the new worktree. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins.
 
 The `/every` command (also available as `/loop` since v1.0.64) schedules a recurring prompt to run automatically at a specified interval. The companion `/after` command runs a prompt once after a specified delay. Both are useful for self-paced automation — polling for results, periodically summarizing progress, or triggering other slash commands on a timer:
 
@@ -579,6 +594,8 @@ The `/diagnose` command (v1.0.64+) analyzes the current session's logs and surfa
 Use `/diagnose` when a session is behaving unexpectedly — it inspects session logs and reports what it finds, making it easier to share diagnostics with support or understand what happened internally.
 
 **Keyboard shortcuts for queuing messages**: Use **Ctrl+Q** or **Ctrl+Enter** to queue a message (send it while the agent is still working). **Ctrl+D** no longer queues messages — it now has its default terminal behavior. If you have muscle memory for Ctrl+D queuing, switch to Ctrl+Q.
+
+**Quick interactive shell** (v1.0.72+): Type **`$`** at the prompt (with no other text) to instantly open an interactive shell in the current session directory. Enable this shortcut with `/settings shellShortcut on` (off by default). This lets you run quick commands without typing `!` or switching terminals.
 
 **Background running tasks**: Press **Ctrl+X → B** to move the current running task or shell command to the background. The task continues executing while you can type a new message or review earlier output. This is useful for long-running commands where you want to interact with the agent while waiting for the result.
 
