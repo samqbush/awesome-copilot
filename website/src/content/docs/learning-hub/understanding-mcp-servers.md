@@ -3,7 +3,7 @@ title: 'Understanding MCP Servers'
 description: 'Learn how Model Context Protocol servers extend GitHub Copilot with access to external tools, databases, and APIs.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-06
+lastUpdated: 2026-07-23
 estimatedReadingTime: '8 minutes'
 tags:
   - mcp
@@ -146,6 +146,12 @@ The available RPCs are:
 | `mcp.config.remove` | Remove a server from the persistent configuration |
 
 These are especially useful for plugins and installer scripts that need to self-register or de-register their MCP server as part of install/uninstall flows, without requiring the user to manually edit config files.
+
+### Managing Live MCP Servers via SDK APIs
+
+In addition to the config RPCs above, the CLI exposes **SDK APIs** that let you manage live MCP servers in actively running sessions (v1.0.70+). This means tooling or installer scripts can add, remove, or inspect running MCP servers without requiring a CLI restart — changes take effect in the current session immediately.
+
+This is particularly useful for development workflows where you're iterating on an MCP server configuration and want changes to be picked up without interrupting an active session.
 
 ### Common MCP Server Configurations
 
@@ -302,6 +308,8 @@ For example, a PostgreSQL server that can't connect because `DATABASE_URL` is no
 ```
 
 You can also open the `/mcp` manager while the agent is working to toggle servers on or off mid-turn. Add, edit, delete, and re-auth actions wait until the turn finishes, but enabling or disabling a server takes effect immediately.
+
+> **Deleting stops the process (v1.0.72+)**: When you delete an MCP server with `/mcp delete`, the CLI immediately stops its running background process — you no longer need to restart the CLI for the server to fully shut down.
 
 **Toggling servers on and off** (v1.0.66+): From the `/mcp` list view, you can **enable or disable individual MCP servers** without editing your config file. Select a server in the list and toggle it — disabled servers won't start in future sessions and their tools won't be available to agents. This is useful for temporarily disabling a server that's causing slowdowns or errors without removing it from your configuration entirely.
 
