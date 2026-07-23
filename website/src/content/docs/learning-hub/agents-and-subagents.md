@@ -3,7 +3,7 @@ title: 'Agents and Subagents'
 description: 'Learn how delegated subagents differ from primary agents, when to use them, and how to launch them in VS Code and Copilot CLI.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-01
+lastUpdated: 2026-07-23
 estimatedReadingTime: '9 minutes'
 tags:
   - agents
@@ -109,6 +109,8 @@ Then summarize the findings into one recommendation.
 
 By default, subagents do not keep spawning additional subagents. In VS Code, recursive delegation is controlled by the `chat.subagents.allowInvocationsFromSubagents` setting, which is off by default.
 
+In GitHub Copilot CLI (v1.0.71+), the default maximum subagent nesting depth is **4** (reduced from 6 to curb runaway recursive delegation). Usage-based billing users can adjust `subagents.maxDepth` in `/settings` up to 128 for deeply nested orchestration needs.
+
 ## Launch subagents in Copilot CLI
 
 In GitHub Copilot CLI, the clearest end-user entry point is **`/fleet`**. Fleet acts as an orchestrator that decomposes a larger objective, launches multiple background subagents, respects dependencies, and then synthesizes the final result.
@@ -211,6 +213,10 @@ No. They can run sequentially when one step depends on another, or in parallel w
 **Can I control how many subagents run simultaneously?**
 
 Yes. In v1.0.66+, usage-based billing users can configure **subagent concurrency and depth limits** directly from `/settings`. The concurrency limit controls how many subagents run in parallel; the depth limit controls how many levels deep delegation can chain (preventing runaway recursive subagent trees). These settings give you predictable control over resource consumption during complex orchestrated tasks.
+
+**Can I send follow-up messages to a running subagent?**
+
+Yes. Multi-turn subagents are always enabled (v1.0.72+) — you can send follow-up messages to agents while they are still running, enabling interactive steering of long-running background tasks without waiting for them to complete first.
 
 ## Next steps
 

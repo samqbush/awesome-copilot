@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-24
+lastUpdated: 2026-07-23
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -177,6 +177,34 @@ Or from an interactive session:
 ```
 
 > **Deprecation notice**: Installing plugins directly from a GitHub repository URL, raw URL, or local file path (e.g., `copilot plugin install github/awesome-copilot`) is deprecated and will be removed in a future release. Use marketplace-based installation instead.
+
+### Installing Individual Skills
+
+You can also install skills directly without a full plugin (v1.0.72+):
+
+```bash
+# Install a skill from a file or URL (user scope by default)
+copilot plugins install --skill my-skill.md
+
+# Install a skill into the current repository
+copilot plugins install --skill my-skill.md --scope project
+```
+
+Installed skills appear in skill pickers and can be managed with `copilot plugins remove --skill <name>`.
+
+### Pinning to a Specific Commit
+
+To lock a plugin to an exact version rather than tracking the latest release, pin it to a commit SHA (v1.0.70+). Add a `sha` field to the plugin source configuration:
+
+```json
+{
+  "source": "my-org/my-plugin",
+  "ref": "v2.1.0",
+  "sha": "a1b2c3d4e5f6..."
+}
+```
+
+The `sha` field ensures reproducible installs even if the tag is moved or the repository is updated.
 
 ### From VS Code
 
