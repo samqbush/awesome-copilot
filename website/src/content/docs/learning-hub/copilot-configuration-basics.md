@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-07-27
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -422,6 +422,10 @@ The model picker opens in a **full-screen view** with inline reasoning effort ad
 **Auto mode and server-side model routing** (v1.0.43+): When you select **Auto** as your model, the CLI uses server-side model routing for real-time model selection. Instead of locking in a single model at session start, Auto mode evaluates each request and routes it to the most appropriate model dynamically. This means straightforward questions can be handled by a faster model while complex reasoning tasks are automatically escalated — without you needing to switch models manually.
 
 **Model family aliases** (v1.0.64+): Instead of typing a full model name, you can use short family aliases in the model setting: `opus`, `sonnet`, `haiku` (Anthropic), and `gpt`, `gemini` (Google/OpenAI). The CLI resolves the alias to the latest available model in that family. This is especially useful in scripts or configuration files where you want to track the best model in a family without hardcoding a version string.
+
+**New models** (v1.0.74–v1.0.75): GitHub Copilot CLI has added support for **Claude Opus 5** and **Gemini 3.6 Flash**. Claude Opus 5 is Anthropic's most capable model, suited for complex reasoning and long-context tasks. Gemini 3.6 Flash provides fast, efficient responses for high-throughput workflows. Both models are available in the model picker.
+
+**Plan mode model** (v1.0.74+): Use `/model plan` (or `/model --plan`) to select a dedicated model for use while in plan mode. Pass a model ID to set it, `off` to clear it, or no argument to open the picker. The plan-mode model reverts to your session model when you exit plan mode — useful for using a cheaper or faster model during planning before switching to a more capable model for implementation.
 
 ### CLI Session Commands
 

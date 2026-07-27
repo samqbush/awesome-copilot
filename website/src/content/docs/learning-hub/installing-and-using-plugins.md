@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-24
+lastUpdated: 2026-07-27
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -73,6 +73,8 @@ The `plugin.json` manifest declares what the plugin contains:
   ]
 }
 ```
+
+> **Open Plugin Spec v1** (v1.0.74+): GitHub Copilot CLI now supports **Open Plugin Spec v1** plugin manifests and `mcp.json` configuration files. This means plugins authored for the Open Plugin Spec are compatible with Copilot CLI without any conversion, making it easier to share plugins across AI tools that support the spec.
 
 ## Why Use Plugins?
 
@@ -199,6 +201,23 @@ copilot plugin marketplace update
 # Remove a plugin
 copilot plugin uninstall my-plugin
 ```
+
+### Managing Plugins, Skills, and MCP Servers from Within a Session
+
+In addition to the CLI commands above, you can manage plugins, skills, and MCP servers from inside an interactive Copilot session using `/plugins` (v1.0.74+). The in-session `/plugins` command has full parity with the `copilot plugin` CLI:
+
+```
+/plugins install my-plugin@awesome-copilot   # install a plugin
+/plugins install --skill my-skill@awesome-copilot  # install a skill directly
+/plugins update my-plugin                    # update a plugin
+/plugins uninstall my-plugin                 # remove a plugin
+/plugins enable my-plugin                    # enable a plugin
+/plugins disable my-plugin                   # disable a plugin
+/plugins remove --mcp my-server              # remove an MCP server
+/plugins help                                # show available sub-commands
+```
+
+Use the `--plugin`, `--mcp`, or `--skill` flags (or a positional kind) to target a specific component type when using `enable`, `disable`, or `remove`.
 
 ### Loading Plugins from a Local Directory
 
