@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-07-30
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -423,6 +423,23 @@ The model picker opens in a **full-screen view** with inline reasoning effort ad
 
 **Model family aliases** (v1.0.64+): Instead of typing a full model name, you can use short family aliases in the model setting: `opus`, `sonnet`, `haiku` (Anthropic), and `gpt`, `gemini` (Google/OpenAI). The CLI resolves the alias to the latest available model in that family. This is especially useful in scripts or configuration files where you want to track the best model in a family without hardcoding a version string.
 
+**Session-specific model override** (v1.0.72+): Use `/model --session` (or `-s`) to change the model, reasoning effort, or context window for the **current session only**, leaving your global settings unchanged:
+
+```
+/model --session              # open the picker scoped to this session
+/model --session claude-sonnet-4.6  # set a specific model for this session
+```
+
+This is useful when you want to test a different model on a particular task without affecting your default configuration.
+
+**Plan mode model** (v1.0.74+): Use `/model plan` (or `/model --plan`) to select a dedicated model that's used **only while in plan mode**. Pass a model ID to set it, `off` to clear it, or no argument to open the picker. The CLI reverts to the session model when you leave plan mode:
+
+```
+/model plan                          # open the plan-mode model picker
+/model plan claude-opus-4-5          # use Opus 4.5 while planning
+/model --plan off                    # clear the plan-mode model override
+```
+
 ### CLI Session Commands
 
 The `/settings` command (v1.0.61+) opens an interactive dialog to browse and edit all user settings in one place. Use it to discover available settings, toggle options, and update values without manually editing your config file:
@@ -504,11 +521,14 @@ The `/cd` command changes the working directory for the current session. Since v
 
 This is useful when you have multiple backgrounded sessions each focused on a different project directory.
 
-The `/worktree` command (v1.0.61+, also aliased `/move`) creates a new git worktree and switches into it, moving any uncommitted changes along. This lets you start working on a parallel branch without leaving your current terminal session:
+The `/worktree` command (v1.0.61+) creates a new git worktree and switches into it, **leaving your uncommitted changes behind** in the current branch. The companion `/move` command (v1.0.72+) carries your uncommitted changes into the new worktree instead. Both commands let you start parallel work without leaving your current terminal session:
 
 ```
-/worktree my-feature-branch
+/worktree my-feature-branch    # create worktree, leave uncommitted changes behind
+/move my-feature-branch        # create worktree, carry uncommitted changes along
 ```
+
+> **Note (v1.0.72+)**: `/worktree` and `/move` are now separate commands with distinct behavior. Prior to v1.0.72, `/move` was an alias for `/worktree`. If you relied on the old `/move` alias that preserved uncommitted changes, use `/move` for that behavior going forward.
 
 In v1.0.66+, you can pass a task description to `/worktree` to name the branch from the task and immediately run the task as the first prompt in the new worktree — all in one step:
 

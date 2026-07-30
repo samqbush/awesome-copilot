@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-24
+lastUpdated: 2026-07-30
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -73,6 +73,8 @@ The `plugin.json` manifest declares what the plugin contains:
   ]
 }
 ```
+
+> **Open Plugin Spec v1 (v1.0.74+)**: GitHub Copilot CLI also supports **Open Plugin Spec v1** plugin manifests and `mcp.json` configuration. If your plugin uses an OPS v1 manifest, the CLI detects and loads it automatically, giving you a standard cross-tool plugin format alongside the GitHub-native `plugin.json` format.
 
 ## Why Use Plugins?
 
@@ -199,6 +201,33 @@ copilot plugin marketplace update
 # Remove a plugin
 copilot plugin uninstall my-plugin
 ```
+
+### Enabling and Disabling Plugin Components (v1.0.76+)
+
+The `/plugins` command now includes **enable/disable controls** for individual plugin components — not just whole plugins. You can toggle specific plugins, instructions, agents, LSP servers, and hooks on or off from within the `/plugins` management panel:
+
+```
+/plugins          # open the plugin management panel
+```
+
+This is useful when you have a plugin installed but want to temporarily disable a particular agent or hook it provides without uninstalling the entire plugin. Disabled components are excluded from the session and won't be loaded, but remain installed for easy re-enabling later.
+
+### Installing Skills from the CLI (v1.0.72+)
+
+You can install individual skills directly from the CLI without packaging them into a plugin:
+
+```bash
+# Install a skill from a local directory
+copilot plugins install --skill ./my-skill/
+
+# Install a skill from a URL
+copilot plugins install --skill https://example.com/my-skill.zip
+
+# Install a skill into the current repository (project scope)
+copilot plugins install --skill ./my-skill/ --scope project
+```
+
+Use `copilot plugins remove --skill my-skill-name` to uninstall a skill installed this way.
 
 ### Loading Plugins from a Local Directory
 
