@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-07-31
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -380,6 +380,8 @@ Settings: File → Settings → Tools → GitHub Copilot
 
 ### GitHub Copilot CLI
 
+**Logging in** (v1.0.77+): Running `copilot login` on a local interactive terminal now defaults to a **browser-based (web) OAuth flow** — your browser opens automatically to complete sign-in. On remote or headless terminals, the device code flow remains the default. You can force a specific flow with `--web-flow` or `--device-code`, or pick one interactively via `/login`.
+
 Configuration file: `~/.copilot-cli/config.json`
 
 ```json
@@ -422,6 +424,16 @@ The model picker opens in a **full-screen view** with inline reasoning effort ad
 **Auto mode and server-side model routing** (v1.0.43+): When you select **Auto** as your model, the CLI uses server-side model routing for real-time model selection. Instead of locking in a single model at session start, Auto mode evaluates each request and routes it to the most appropriate model dynamically. This means straightforward questions can be handled by a faster model while complex reasoning tasks are automatically escalated — without you needing to switch models manually.
 
 **Model family aliases** (v1.0.64+): Instead of typing a full model name, you can use short family aliases in the model setting: `opus`, `sonnet`, `haiku` (Anthropic), and `gpt`, `gemini` (Google/OpenAI). The CLI resolves the alias to the latest available model in that family. This is especially useful in scripts or configuration files where you want to track the best model in a family without hardcoding a version string.
+
+Recently added models include **Claude Opus 5** (v1.0.75+), **grok-4.5** (v1.0.76+), and **gemini-3.6-flash** (v1.0.74+).
+
+**Plan-mode model** (v1.0.74+): Use `/model plan` (or `/model --plan`) to pick a separate model used only while in plan mode. Pass a model ID to set it, `off` to clear it, or no argument to open the picker. The plan-mode model automatically reverts to the session model when you leave plan mode:
+
+```
+/model plan                 # open the picker for plan-mode model
+/model plan claude-opus-5   # use Claude Opus 5 for planning
+/model plan off             # clear the plan-mode model override
+```
 
 ### CLI Session Commands
 
