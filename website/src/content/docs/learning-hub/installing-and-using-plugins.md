@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-24
+lastUpdated: 2026-07-31
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -73,6 +73,8 @@ The `plugin.json` manifest declares what the plugin contains:
   ]
 }
 ```
+
+> **Open Plugin Spec v1 (v1.0.74+)**: Plugins can now also use [Open Plugin Spec v1](https://spec.openpluginspec.org/) manifests alongside MCP server configuration in `mcp.json`. This makes it easier to author plugins that work with multiple AI platforms.
 
 ## Why Use Plugins?
 
@@ -199,6 +201,39 @@ copilot plugin marketplace update
 # Remove a plugin
 copilot plugin uninstall my-plugin
 ```
+
+### Enabling and Disabling Components (v1.0.76+)
+
+You can selectively enable or disable individual components from any installed plugin without uninstalling the whole package. This is useful when you want most of a plugin's functionality but need to turn off a specific agent, hook, or instruction that conflicts with your workflow.
+
+From an interactive session:
+
+```
+/plugins enable my-plugin        # enable an entire plugin
+/plugins disable my-plugin       # disable an entire plugin
+/plugins disable --agent my-agent-name    # disable a specific agent
+/plugins disable --hook my-hook          # disable a specific hook
+/plugins disable --skill my-skill        # disable a specific skill
+```
+
+Disabled components are hidden from agent pickers and do not run during sessions until re-enabled.
+
+### Installing Skills Directly (v1.0.72+)
+
+You can install skills without a full plugin using the `--skill` flag:
+
+```bash
+# Install a skill from a local directory
+copilot plugins install --skill ./my-skill/
+
+# Install a skill from a URL
+copilot plugins install --skill https://example.com/my-skill.tar.gz
+
+# Install a skill into the current repository (project scope)
+copilot plugins install --skill ./my-skill/ --scope project
+```
+
+Skills installed this way appear in `/plugins` and can be managed (enabled, disabled, removed) the same as plugin-bundled skills.
 
 ### Loading Plugins from a Local Directory
 
