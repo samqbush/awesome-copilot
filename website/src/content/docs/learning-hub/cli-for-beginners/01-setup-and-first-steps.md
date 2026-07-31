@@ -3,7 +3,7 @@ title: '01 · First Steps'
 description: 'Experience your first GitHub Copilot CLI demos and learn the three main interaction modes.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-19
+lastUpdated: 2026-07-31
 ---
 
 ![Chapter 01: First Steps](/images/learning-hub/copilot-cli-for-beginners/01/chapter-header.png)
@@ -316,7 +316,7 @@ Step 4: Test the flow
 Proceed with implementation? [Y/n]
 ```
 
-**Key insight**: Plan mode lets you review and modify the approach before any code is written. Once a plan is complete, you can even tell Copilot CLI to save it to a file for later reference. For example, "Save this plan to `mark_as_read_plan.md`" would create a markdown file with the plan details.
+**Key insight**: Plan mode lets you review and modify the approach before any code is written. While in plan mode, Copilot CLI is **read-only** and will not edit any files or run commands that change your workspace until you approve and move to implementation. This keeps you safely in the "thinking" stage until you're ready. Once a plan is complete, you can even tell Copilot CLI to save it to a file for later reference. For example, "Save this plan to `mark_as_read_plan.md`" would create a markdown file with the plan details.
 
 > 💡 **Want something more complex?** Try: `/plan Add search and filter capabilities to the book app`. Plan mode scales from simple features to full applications.
 
@@ -365,16 +365,22 @@ copilot --allow-all -p "Review @myfile.py for issues"
 
 ## Essential Slash Commands
 
-These commands work in interactive mode. **Start with just these six** - they cover 90% of daily use:
+These commands are great to learn initially as you're getting started with Copilot CLI:
 
 | Command | What It Does | When to Use |
 |---------|--------------|-------------|
-| `/help` | Show all available commands | When you forget a command |
+| `/ask` | Ask a quick question without it affecting your conversation history | When you want a quick answer without derailing your current task |
 | `/clear` | Clear conversation and start fresh | When switching topics |
-| `/plan` | Plan your work out before coding | For more complex features |
-| `/research` | Deep research using GitHub and web sources | When you need to investigate a topic before coding |
+| `/help` | Show all available commands | When you forget a command |
 | `/model` | Show or switch AI model | When you want to change the AI model |
+| `/plan` | Plan your work out before coding | For more complex features |
+| `/refine` | Rewrite a rough, stream-of-consciousness prompt into a clear, focused one | When your prompt feels messy and you want better results |
+| `/research` | Deep research using GitHub and web sources | When you need to investigate a topic before coding |
 | `/exit` | End the session | When you're done |
+
+> 💡 **`/ask` vs regular chat**: Normally every message you send becomes part of the ongoing conversation and affects future responses. `/ask` is an "off the record" shortcut — perfect for quick one-off questions like `/ask What does YAML mean?` without polluting your session context.
+
+> 💡 **`/refine` for better prompts**: Not sure if your prompt is clear enough? Type it out as it comes to mind, then run `/refine` to let Copilot rewrite it into a precise, well-structured prompt before sending. This is especially useful when you're new to AI tools and still learning how to write effective prompts.
 
 That's it for getting started! As you become comfortable, you can explore additional commands.
 
@@ -389,11 +395,12 @@ That's it for getting started! As you become comfortable, you can explore additi
 
 | Command | What It Does |
 |---------|--------------|
-| `/init` | Initialize Copilot instructions for your repository |
 | `/agent` | Browse and select from available agents |
-| `/skills` | Manage skills for enhanced capabilities |
+| `/env` | Show loaded environment details — what instructions, MCP servers, skills, agents, and plugins are active |
+| `/init` | Initialize Copilot instructions for your repository |
 | `/mcp` | Manage MCP server configuration |
 | `/settings` | Open an interactive dialog to browse and edit all user settings in one place |
+| `/skills` | Manage skills for enhanced capabilities |
 
 > 💡 Skills are covered in detail in [Chapter 05](../05-skills/). MCP servers are covered in [Chapter 06](../06-mcp-servers/).
 
