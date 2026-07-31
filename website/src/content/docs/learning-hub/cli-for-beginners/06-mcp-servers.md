@@ -3,7 +3,7 @@ title: '06 · Connect to GitHub, Databases & APIs'
 description: 'Mirror the source chapter on MCP servers and external integrations for GitHub Copilot CLI.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-19
+lastUpdated: 2026-07-31
 ---
 
 ![Chapter 06: MCP Servers](/images/learning-hub/copilot-cli-for-beginners/06/chapter-header.png)
@@ -83,7 +83,7 @@ MCP Servers:
 
 > 💡 **Only seeing the GitHub server?** That's expected! If you haven't added any additional MCP servers yet, GitHub is the only one listed. You'll add more in the next section.
 
-> 📚 **Want to see all `/mcp` commands?** There are additional commands for adding, editing, enabling, and deleting servers. See the [full command reference](#-additional-mcp-commands) at the end of this chapter.
+> 📚 **Want to see all MCP management commands?** You can manage servers with `/mcp` slash commands inside chat, or with `copilot mcp` directly from your terminal. See the [full command reference](#-additional-mcp-commands) at the end of this chapter.
 
 <details>
 <summary>🎬 See it in action!</summary>
@@ -898,14 +898,39 @@ If a server is disabled, see the [additional `/mcp` commands](#-additional-mcp-c
 
 Beyond `/mcp show`, there are several other commands for managing your MCP servers:
 
+You can manage MCP servers in two ways: using **slash commands inside a chat session**, or using the **`copilot mcp` command directly in your terminal** (no chat session needed).
+
+### Option 1: Slash commands (inside a chat session)
+
+These work when you're already inside `copilot`:
+
 | Command | What It Does |
 |---------|--------------|
 | `/mcp show` | Show all configured MCP servers and their status |
+| `/mcp list` | Show currently attached MCP servers and their status; can be run while Copilot is working |
 | `/mcp add` | Interactive setup for adding a new server |
 | `/mcp edit <server-name>` | Edit an existing server configuration |
-| `/mcp enable <server-name>` | Enable a disabled server |
-| `/mcp disable <server-name>` | Temporarily disable a server |
+| `/mcp enable <server-name>` | Enable a disabled server (persists across sessions) |
+| `/mcp disable <server-name>` | Disable a server (persists across sessions) |
 | `/mcp delete <server-name>` | Remove a server permanently |
+| `/mcp auth <server-name>` | Re-authenticate with an MCP server that uses OAuth (e.g., after switching accounts) |
+
+### Option 2: `copilot mcp` command (from your terminal)
+
+You can also manage MCP servers directly from your terminal without starting a chat session first:
+
+```bash
+# List all configured MCP servers
+copilot mcp list
+
+# Enable a server
+copilot mcp enable filesystem
+
+# Disable a server
+copilot mcp disable context7
+```
+
+> 💡 **When to use which?** Use `/mcp` slash commands when you're already in a chat session. Use `copilot mcp` from the terminal when you want to quickly check or change your server settings before starting a session.
 
 For most of this course, `/mcp show` is all you need. The other commands become useful as you manage more servers over time.
 
