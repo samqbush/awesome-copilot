@@ -3,7 +3,7 @@ title: 'Using the Copilot Coding Agent'
 description: 'Learn how to use GitHub Copilot coding agent to autonomously work on issues, generate pull requests, and automate development tasks.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-05-13
+lastUpdated: 2026-08-01
 estimatedReadingTime: '12 minutes'
 tags:
   - coding-agent
@@ -377,6 +377,10 @@ Since v1.0.47, `--resume` also surfaces **cloud agent sessions that haven't yet 
 
 > **Note**: Remote control replaces the earlier "steering" feature. If you see references to steering in older documentation, remote control is the updated equivalent.
 
+### Managed Device Enforcement (GA)
+
+Remote control with SSO enforcement for managed devices is now generally available (v1.0.72+). When your organization's managed settings require SSO, the CLI automatically enforces SSO before allowing remote control connections — ensuring that remote sessions are always authenticated within your organization's identity provider.
+
 ## Hooks and the Coding Agent
 
 Hooks are especially valuable with the coding agent because they provide deterministic guardrails for autonomous work:
@@ -438,7 +442,7 @@ A: The agent has built-in timeouts. If it can't make progress, it will open a PR
 
 **Q: Can I assign multiple issues at once?**
 
-A: Yes. The coding agent can work on multiple issues in parallel, each in its own branch. Use Mission Control on GitHub.com to track all active agent sessions.
+A: Yes. The coding agent can work on multiple issues in parallel, each in its own branch. Use Mission Control on GitHub.com to track all active agent sessions. In Copilot CLI (v1.0.72+), you can also enable the experimental **Sessions sidebar** (`/experimental on`) to manage multiple concurrent local sessions — switch between them, spawn new ones, and see their status at a glance from within the CLI interface.
 
 **Q: Does the coding agent use my custom agents and skills?**
 
