@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-24
+lastUpdated: 2026-08-01
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -73,6 +73,8 @@ The `plugin.json` manifest declares what the plugin contains:
   ]
 }
 ```
+
+> **Open Plugin Spec v1 (v1.0.74+)**: GitHub Copilot CLI now supports the [Open Plugin Spec v1](https://openplugspec.ai/) manifest format in addition to the existing `plugin.json` format. Plugins authored to the Open Plugin Spec can be installed and used directly. The CLI also reads MCP server configuration from `mcp.json` files inside plugin directories, making it easier to use plugins built for other AI assistants that follow the open standard.
 
 ## Why Use Plugins?
 
@@ -198,6 +200,45 @@ copilot plugin marketplace update
 
 # Remove a plugin
 copilot plugin uninstall my-plugin
+```
+
+### Enabling and Disabling Plugin Components (v1.0.76+)
+
+You can selectively enable or disable individual plugin components — agents, instructions, hooks, MCP servers, and skills — without uninstalling the plugin. Use the `/plugins` command inside a session to open the plugin manager, then toggle specific components on or off.
+
+This is useful when you want most of a plugin's features but need to disable a specific agent or hook that conflicts with your current workflow:
+
+```
+/plugins                              # open the plugin manager
+```
+
+From the manager, select the plugin, then select the specific component to toggle. Disabled components are excluded from the session but remain installed and can be re-enabled at any time. The `/plugins` manager also surfaces `enable`, `disable`, `update`, and `remove` verbs as subcommands:
+
+```bash
+# Enable or disable specific components from the CLI
+/plugins enable --plugin my-plugin --agent api-architect
+/plugins disable --plugin my-plugin --hook lint-check
+```
+
+### Installing Skills Directly (v1.0.72+)
+
+You can install individual skills without a full plugin using the `--skill` flag:
+
+```bash
+# Install a skill from a local directory
+copilot plugins install --skill ./my-skill/
+
+# Install a skill into the current repository (project scope)
+copilot plugins install --skill ./my-skill/ --scope project
+
+# Install a skill from a URL
+copilot plugins install --skill https://example.com/my-skill.zip
+```
+
+Installed skills appear in `copilot skill list`. To remove a skill:
+
+```bash
+copilot plugins remove --skill my-skill
 ```
 
 ### Loading Plugins from a Local Directory
