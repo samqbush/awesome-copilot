@@ -3,7 +3,7 @@ title: 'Using the Copilot Coding Agent'
 description: 'Learn how to use GitHub Copilot coding agent to autonomously work on issues, generate pull requests, and automate development tasks.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-05-13
+lastUpdated: 2026-08-03
 estimatedReadingTime: '12 minutes'
 tags:
   - coding-agent
@@ -334,6 +334,18 @@ This repository provides a curated collection of agents, skills, and hooks desig
 
 > **Example workflow**: Combine a `test-specialist` agent with a `database-migrations` skill and a linting hook. Assign an issue to the coding agent using the test-specialist agent — it will automatically pick up the migrations skill when relevant, and the hook ensures all code is formatted before completion.
 
+### Autopilot Mode and Chained Tasks (v1.0.76+)
+
+When you run the coding agent in **autopilot** mode, it now stays in autopilot after completing a task (signaled by `task_complete`) rather than returning to interactive mode. This means you can chain a series of tasks without manually re-enabling autopilot between each one.
+
+To override this default and return to interactive mode after each task, set `stayInAutopilot` to `false` in your session settings:
+
+```
+/settings stayInAutopilot false
+```
+
+This behavior is particularly useful when running the coding agent non-interactively or when dispatching multiple sequential tasks in an automated workflow.
+
 ## Remote Control
 
 You can connect to and steer a running coding agent session from a local Copilot CLI terminal using **remote control**. This lets you observe the agent's progress, send follow-up prompts, and redirect its work in real time — without waiting for it to open a PR first.
@@ -439,6 +451,14 @@ A: The agent has built-in timeouts. If it can't make progress, it will open a PR
 **Q: Can I assign multiple issues at once?**
 
 A: Yes. The coding agent can work on multiple issues in parallel, each in its own branch. Use Mission Control on GitHub.com to track all active agent sessions.
+
+If you're using Copilot CLI, enable the **Sessions sidebar** (v1.0.76+, experimental) to manage multiple concurrent sessions from a single terminal window. Turn it on with:
+
+```
+/experimental on
+```
+
+The Sessions sidebar shows all active sessions, lets you switch between them, spawn new ones, and see their status at a glance. Press `n` to spawn a new session, arrows to move between sessions, and `x` twice to close one.
 
 **Q: Does the coding agent use my custom agents and skills?**
 
