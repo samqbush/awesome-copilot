@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-08-04
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -451,6 +451,8 @@ The `/session rename` command renames the current session. When called **without
 
 Auto-generated names help you find sessions quickly when switching between multiple backgrounded sessions.
 
+> **Sessions sidebar (v1.0.76+, experimental)**: Enable experimental features (`/experimental on`) to get a **split-view Sessions sidebar** that shows all your active sessions at a glance, lets you switch between them with the keyboard or mouse, spawn new sessions, and see each session's status — all without leaving your current session. Toggle the sidebar with `/settings sidebar on`.
+
 You can also name a session at startup with the `--name` flag, and resume it by name later:
 
 ```bash
@@ -519,6 +521,8 @@ In v1.0.66+, you can pass a task description to `/worktree` to name the branch f
 This creates a branch named from your task description and begins working on it immediately, making it easy to spin up parallel work without stopping to think of a branch name.
 
 After the command runs, the session is inside the new worktree. Use this when you want to work on a second task in parallel without stashing changes or opening a new terminal. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins.
+
+> **New in v1.0.78 (experimental)**: The `/new-worktree` command creates a new git worktree and starts a **fresh conversation** in it — unlike `/worktree` (which carries your current session's context and uncommitted changes into the new worktree). Use `/new-worktree` when you want a completely clean slate for a parallel task, without any history from your current session. This command is part of the experimental feature set.
 
 The `/every` command (also available as `/loop` since v1.0.64) schedules a recurring prompt to run automatically at a specified interval. The companion `/after` command runs a prompt once after a specified delay. Both are useful for self-paced automation — polling for results, periodically summarizing progress, or triggering other slash commands on a timer:
 
@@ -655,6 +659,14 @@ The `/autopilot` command (v1.0.45+) is a quick in-session toggle that switches b
 ```
 
 Use `/autopilot` when you want to flip between supervised and unsupervised operation mid-session without typing out the full `/allow-all on` or `/allow-all off` commands.
+
+The `/permissions` command (v1.0.78+) provides a unified way to switch between all three approval modes in a single picker:
+
+```
+/permissions
+```
+
+Running `/permissions` opens an interactive menu to select **interactive** (ask for each tool use), **autopilot** (approve all automatically), or **plan** (planning-only, no file mutations) mode. This is a convenient alternative to `/autopilot` or `/allow-all` when you want to explicitly set the mode rather than toggling.
 
 > **Enhanced autopilot (v1.0.64+)**: When autopilot mode is active — including when launched with `--autopilot` at startup or during automatic continuation turns — the agent automatically handles elicitation dialogs, `ask_user` prompts, sampling requests, and permission prompts without surfacing them as interactive dialogs. This means long-running automated sessions can proceed end-to-end without manual confirmation steps.
 
