@@ -3,7 +3,7 @@ title: 'Understanding MCP Servers'
 description: 'Learn how Model Context Protocol servers extend GitHub Copilot with access to external tools, databases, and APIs.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-06
+lastUpdated: 2026-08-05
 estimatedReadingTime: '8 minutes'
 tags:
   - mcp
@@ -279,6 +279,8 @@ MCP server SDKs are available in [Python](https://github.com/modelcontextprotoco
 When an MCP server fails to start or loses its connection, Copilot CLI surfaces a warning with actionable details to help you diagnose the problem quickly.
 
 **Failure warnings include stderr output** (v1.0.42+): If your MCP server prints error messages to stderr (e.g., missing environment variables, connection refused, import errors), those messages are now included directly in the CLI warning. This means you usually see the root cause without needing to run the server manually.
+
+> **Sandbox startup failures fail fast** (v1.0.79+): When the CLI sandbox cannot start an MCP server, the server now fails within seconds rather than stalling the session indefinitely. The error message indicates that the sandbox was at fault and provides guidance on how to fix the issue or opt out of sandboxing for that server.
 
 For example, a PostgreSQL server that can't connect because `DATABASE_URL` is not set will show:
 
