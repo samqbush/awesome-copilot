@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-08-05
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -403,6 +403,9 @@ CLI settings use **camelCase** naming. Key settings added in recent releases:
 | `proxy` | HTTP(S) proxy URL for all outbound CLI requests (e.g., `http://proxy.example.com:8080`) (v1.0.64+) |
 | `sessionLimits` | Restrict credit or turn usage for a session; limits apply across the current conversation and reset on `/clear` (v1.0.66+) |
 | `stayInAutopilot` | Keep the CLI in autopilot mode after an autopilot task completes, instead of returning to interactive mode (v1.0.69+) |
+| `showToolDurations` | Show how long each tool call took in the timeline header (on by default for calls ≥5 seconds; v1.0.78+) |
+| `pinnedPrompts` | Pin the current prompt one row higher in the UI. Off by default on terminals under 30 rows; set explicitly to override at any size (v1.0.79+) |
+| `allowDevToolAccess` | Grant sandboxed builds access to toolchain caches, registries, and installs so builds work without extra setup. On by default. **Note**: renamed from `allowDevToolCaches` in v1.0.79-1 — the old key is silently ignored, so if you previously set `allowDevToolCaches: false` to opt out you must rename the setting (v1.0.78+) |
 
 > **Note**: Older snake_case names (e.g., `include_gitignored`, `auto_updates_channel`) are still accepted for backward compatibility, but camelCase is now the preferred format.
 
@@ -470,13 +473,18 @@ You can also press **x** on a highlighted session in the session picker (`--resu
 
 In the session picker, press **`s`** to cycle the sort order: relevance, last used, created, or name. The picker also shows the branch name and idle/in-use status for each session.
 
-The `/rewind` command opens a timeline picker that lets you roll back the conversation to any earlier point in history, reverting both the conversation and any file changes made after that point. You can also trigger it by pressing **double-Esc**:
+The `/rewind` command opens a timeline picker that lets you roll back the conversation to any earlier point in history. You can also trigger it by pressing **double-Esc**:
 
 ```
 /rewind
 ```
 
-Use `/rewind` when you want to branch off from a different point in the conversation, rather than just undoing the most recent turn.
+When you select a point to rewind to, you are given a choice of scope:
+
+- **Conversation only** — rewinds the conversation history but leaves your files as they are
+- **Conversation + files** — rewinds the conversation and restores only the files that Copilot changed after that point, skipping any file whose contents no longer match what Copilot last wrote
+
+As of v1.0.78, `/rewind` no longer requires git — it works in any directory. Use `/rewind` when you want to branch off from a different point in the conversation, rather than just undoing the most recent turn.
 
 The `/undo` command reverts the last turn—including any file changes the agent made—letting you course-correct without manually undoing edits:
 
@@ -519,6 +527,15 @@ In v1.0.66+, you can pass a task description to `/worktree` to name the branch f
 This creates a branch named from your task description and begins working on it immediately, making it easy to spin up parallel work without stopping to think of a branch name.
 
 After the command runs, the session is inside the new worktree. Use this when you want to work on a second task in parallel without stashing changes or opening a new terminal. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins.
+
+The `/worktree new` sub-command (v1.0.79+) goes one step further: instead of moving the current conversation into a new worktree, it creates a new worktree **and immediately starts a fresh conversation inside it**, leaving your current session unchanged:
+
+```
+/worktree new                  # new worktree + new conversation (auto-named)
+/worktree new my-feature       # new worktree named my-feature + new conversation
+```
+
+Use `/worktree new` when you want to spin up a fully independent parallel session — for example, starting a second agent on a different task while the first continues in its own worktree.
 
 The `/every` command (also available as `/loop` since v1.0.64) schedules a recurring prompt to run automatically at a specified interval. The companion `/after` command runs a prompt once after a specified delay. Both are useful for self-paced automation — polling for results, periodically summarizing progress, or triggering other slash commands on a timer:
 
@@ -579,6 +596,10 @@ The `/diagnose` command (v1.0.64+) analyzes the current session's logs and surfa
 Use `/diagnose` when a session is behaving unexpectedly — it inspects session logs and reports what it finds, making it easier to share diagnostics with support or understand what happened internally.
 
 **Keyboard shortcuts for queuing messages**: Use **Ctrl+Q** or **Ctrl+Enter** to queue a message (send it while the agent is still working). **Ctrl+D** no longer queues messages — it now has its default terminal behavior. If you have muscle memory for Ctrl+D queuing, switch to Ctrl+Q.
+
+**Opening an editor for `ask_user` prompts** (v1.0.77+): When the agent opens an `ask_user` freeform prompt, press **Ctrl+G** to open your configured editor to compose your answer. The editor opens inline — when you save and close it, the text is pasted back into the prompt. This is useful for multi-line answers or when you need to reference or copy from another file while responding.
+
+**Timeline tool call durations** (v1.0.78+): Timeline headers now show how long each tool call took — displayed right-aligned and ticking live for calls that are still running. Only tool calls lasting 5 seconds or more show a duration by default, keeping the timeline clean for quick operations. To disable durations entirely, toggle the `showToolDurations` setting in `/settings`.
 
 **Background running tasks**: Press **Ctrl+X → B** to move the current running task or shell command to the background. The task continues executing while you can type a new message or review earlier output. This is useful for long-running commands where you want to interact with the agent while waiting for the result.
 
@@ -662,6 +683,14 @@ Use `/autopilot` when you want to flip between supervised and unsupervised opera
 
 > **Read-only `gh` CLI commands (v1.0.46+)**: Read-only `gh` commands — such as `gh issue list`, `gh pr view`, `gh run status`, and other commands that don't write to GitHub — are **automatically approved** without a permission prompt. Only commands that write to GitHub (like creating issues, merging PRs) still require explicit approval. This reduces friction during exploratory sessions where you frequently check issue or PR status.
 
+The `/permissions` command (v1.0.78+) provides a quick way to switch between approval modes mid-session without using the full `/allow-all` syntax:
+
+```
+/permissions        # open the approval mode picker
+```
+
+The picker lists all available modes — interactive, autopilot, auto allow-all, and others — and lets you select one. This is the recommended way to change approval modes when you want a guided view of the options rather than remembering the exact command syntax.
+
 The `--effort` flag (shorthand for `--reasoning-effort`) controls how much computational reasoning the model applies to a request:
 
 ```bash
@@ -671,6 +700,15 @@ gh copilot --effort high "Refactor the authentication module"
 Accepted values are `low`, `medium`, and `high`. You can also set a default via the `effortLevel` config setting.
 
 ### CLI Startup Flags
+
+**Signing in**: `copilot login` now defaults to a **browser-based (web) OAuth flow** on local interactive terminals (v1.0.77+). A browser window opens for authentication instead of requiring a device code. Remote and headless environments continue using the device code flow. Use explicit flags to force either mode, or choose interactively with `/login`:
+
+```bash
+copilot login                 # browser flow on local terminals (default)
+copilot login --web-flow      # force browser flow
+copilot login --device-code   # force device code flow (for remote/headless)
+/login                        # interactive picker to choose the flow
+```
 
 The `-C <directory>` flag changes the working directory before starting, similar to `git -C` (v1.0.42+). This is useful for scripts or aliases that need to start Copilot CLI in a specific project directory without a separate `cd`:
 
