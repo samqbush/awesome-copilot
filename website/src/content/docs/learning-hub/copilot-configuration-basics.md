@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-08-07
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -362,6 +362,24 @@ Settings file: `.vscode/settings.json` or global user settings
 }
 ```
 
+#### Dictation Instructions (VS Code 1.132+)
+
+GitHub Copilot in VS Code supports on-device multilingual dictation. You can customize how Copilot transcribes voice input by providing dictation instructions in Markdown files:
+
+- **User-level**: `~/.copilot/dictation.md` — applies to all your projects
+- **Repository-level**: `.github/dictation.md` — applies to the current workspace (loaded in trusted workspaces only)
+
+Both files are combined when active. Use them to specify preferred terminology, domain-specific vocabulary, or abbreviation expansions for more accurate transcription:
+
+```markdown
+<!-- .github/dictation.md -->
+Always expand "OA" to "OAuth".
+Prefer "TypeScript" over "type script" (two words).
+When I say "backtick", insert the ` character.
+```
+
+Configure dictation behavior via **Voice: Configure Dictation Instructions** from the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`).
+
 ### Visual Studio
 
 Settings: Tools → Options → GitHub Copilot
@@ -520,6 +538,14 @@ This creates a branch named from your task description and begins working on it 
 
 After the command runs, the session is inside the new worktree. Use this when you want to work on a second task in parallel without stashing changes or opening a new terminal. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins.
 
+The `/new-worktree` command (v1.0.78+) is a companion to `/worktree` that creates a new worktree **and** starts a fresh conversation in it at the same time. Unlike `/worktree` — which moves your current session into the new worktree — `/new-worktree` leaves your current session running and opens a separate session inside the new branch:
+
+```
+/new-worktree my-feature-branch    # new worktree + new conversation
+```
+
+Use `/new-worktree` when you want to kick off parallel work without disrupting your current conversation. The existing session stays active; the new one starts clean in its own worktree.
+
 The `/every` command (also available as `/loop` since v1.0.64) schedules a recurring prompt to run automatically at a specified interval. The companion `/after` command runs a prompt once after a specified delay. Both are useful for self-paced automation — polling for results, periodically summarizing progress, or triggering other slash commands on a timer:
 
 ```
@@ -656,6 +682,14 @@ The `/autopilot` command (v1.0.45+) is a quick in-session toggle that switches b
 
 Use `/autopilot` when you want to flip between supervised and unsupervised operation mid-session without typing out the full `/allow-all on` or `/allow-all off` commands.
 
+The `/permissions` command (v1.0.78+) opens an interactive panel for reviewing and switching approval modes without leaving the session. It shows the current tool-permission policy and lets you change it:
+
+```
+/permissions          # open the permissions panel
+```
+
+This is an alternative to typing `/allow-all on`, `/allow-all off`, or `/autopilot` when you want a guided view of the current setting rather than a direct toggle.
+
 > **Enhanced autopilot (v1.0.64+)**: When autopilot mode is active — including when launched with `--autopilot` at startup or during automatic continuation turns — the agent automatically handles elicitation dialogs, `ask_user` prompts, sampling requests, and permission prompts without surfacing them as interactive dialogs. This means long-running automated sessions can proceed end-to-end without manual confirmation steps.
 
 > **Auto allow-all mode (v1.0.69+)**: In addition to the standard allow-all mode (which approves everything), the CLI now supports an **auto allow-all** mode that uses an LLM judge to evaluate each tool request. When enabled, the judge automatically approves requests it evaluates as acceptable, and asks you for manual confirmation only for requests it considers risky. This gives you a middle ground between full autopilot and fully supervised operation — most routine actions proceed automatically while unusual or potentially dangerous actions still surface for your review. As of v1.0.69-3, this mode requires experimental features to be enabled — use `/experimental on` or start the CLI with `--experimental` — then activate it with `/allow-all auto`. The previous `AUTO_APPROVAL` environment variable approach has been removed in favour of experimental mode.
@@ -688,6 +722,14 @@ copilot --plan          # start in plan mode (propose without executing)
 ```
 
 This is useful in scripts or CI pipelines where you want the CLI to immediately begin working in a specific mode without an interactive prompt.
+
+**Plan-first autopilot (v1.0.79+)**: Combine `--plan` with `--mode autopilot` to have the CLI generate a plan first, then automatically implement it without pausing for approval:
+
+```bash
+copilot --plan --mode autopilot "Refactor the authentication module"
+```
+
+This is especially useful for longer tasks where you want to review the approach (plan phase) before the agent carries it out autonomously (autopilot phase) — all in a single non-interactive invocation.
 
 The `--max-autopilot-continues` flag controls how many times Copilot can automatically continue in autopilot mode before pausing for confirmation. The default is 5:
 
