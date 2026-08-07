@@ -3,7 +3,7 @@ title: '01 · First Steps'
 description: 'Experience your first GitHub Copilot CLI demos and learn the three main interaction modes.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-19
+lastUpdated: 2026-08-07
 ---
 
 ![Chapter 01: First Steps](/images/learning-hub/copilot-cli-for-beginners/01/chapter-header.png)
@@ -393,6 +393,7 @@ That's it for getting started! As you become comfortable, you can explore additi
 | `/agent` | Browse and select from available agents |
 | `/skills` | Manage skills for enhanced capabilities |
 | `/mcp` | Manage MCP server configuration |
+| `/plugins` | Enable or disable plugins, instructions, agents, LSP servers, and hooks without restarting the session |
 | `/settings` | Open an interactive dialog to browse and edit all user settings in one place |
 
 > 💡 Skills are covered in detail in [Chapter 05](../05-skills/). MCP servers are covered in [Chapter 06](../06-mcp-servers/).
@@ -421,6 +422,7 @@ That's it for getting started! As you become comfortable, you can explore additi
 | Command | What It Does |
 |---------|--------------|
 | `/allow-all` | Auto-approve all permission prompts for this session |
+| `/permissions` | Switch between approval modes (interactive, plan, autopilot) for controlling how much Copilot can do without asking |
 | `/add-dir <directory>` | Add a directory to allowed list |
 | `/list-dirs` | Show all allowed directories |
 | `/cwd`, `/cd [directory]` | View or change working directory |
