@@ -3,7 +3,7 @@ title: 'Agents and Subagents'
 description: 'Learn how delegated subagents differ from primary agents, when to use them, and how to launch them in VS Code and Copilot CLI.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-01
+lastUpdated: 2026-08-07
 estimatedReadingTime: '9 minutes'
 tags:
   - agents
@@ -193,6 +193,39 @@ That means you should think about delegation features in product-specific terms:
 - **GitHub.com coding agent / cloud agent**: supports custom agents, but some VS Code-specific frontmatter is intentionally ignored
 
 If you share agent files across surfaces, document those differences so users know which behaviors are portable and which are editor-specific.
+
+## VS Code 1.132 agent UX improvements
+
+VS Code 1.132 (released August 2026) introduced several UX improvements to the agent chat experience that are relevant when building and using agents.
+
+### `/btw` side chats
+
+The `/btw` command lets you ask a contextual question **without interrupting** the current agent turn. The side chat shares context and prompt cache with the primary chat, so the agent has full awareness of the ongoing session:
+
+```
+/btw what does the AuthMiddleware class actually do here?
+```
+
+Use `/btw` when you want to understand something mid-task without breaking the agent's train of thought. The main session resumes where it left off when the side chat closes.
+
+### Status pills
+
+Status pills appear above the chat input and give you a real-time overview of the agent's active work:
+
+| Pill | What it shows |
+|------|---------------|
+| **Changes** | Uncommitted file edits in the current session |
+| **Previews** | Live preview windows the agent has opened |
+| **Subagents** | Active subagent sessions running in parallel |
+| **Browsers** | Browser windows the agent is controlling |
+
+Click any pill to see details or navigate to the relevant view.
+
+### Agent host GA
+
+The VS Code agent host — the dedicated subprocess that powers GitHub Copilot's agentic capabilities — **left preview in VS Code 1.132**. It is now on by default for all users. The agent host aligns VS Code's Copilot behavior with Copilot CLI and the GitHub Copilot app, giving agents consistent tool access and context handling across surfaces.
+
+> **Note**: The `ChatAgentHostEnabled` VS Code policy was removed in 1.132. Admins can no longer use policy to disable the agent host centrally.
 
 ## Common questions
 

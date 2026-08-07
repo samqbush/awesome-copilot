@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-24
+lastUpdated: 2026-08-07
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -251,6 +251,18 @@ If you only need a single agent or skill (rather than a full plugin), you can st
 - Copy a hook configuration into `.github/hooks/`
 
 See [Using the Copilot Coding Agent](../using-copilot-coding-agent/) for details on this approach.
+
+## Agent Plugins open standard
+
+The plugin format used by GitHub Copilot CLI and VS Code is based on the **Agent Plugins open standard** — a vendor-neutral specification for packaging and distributing agent capabilities. This means plugins you build for GitHub Copilot are portable and can, in principle, be used by any tool that implements the same standard.
+
+Key aspects of the open standard (documented in August 2026):
+
+- **Declarative manifest** (`plugin.json`) — describes the plugin's name, version, and included components (agents, skills, hooks, extensions)
+- **Client extension support** — plugins can ship IDE or client extensions bundled under `com.github.copilot/extensions/` (v1.0.79+), allowing a plugin to deliver both agent capabilities and an accompanying UI extension
+- **Marketplace interoperability** — the same marketplace registration format works across compatible clients (Copilot CLI, VS Code)
+
+> **Further reading**: See the [Agent Plugins specification](https://agentplugins.io) for the full open standard.
 
 ## Best Practices
 
