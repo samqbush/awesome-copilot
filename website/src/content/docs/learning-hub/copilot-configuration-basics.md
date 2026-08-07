@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-08-07
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -433,6 +433,8 @@ The `/settings` command (v1.0.61+) opens an interactive dialog to browse and edi
 
 The settings dialog supports search — type to filter settings by name. Changes take effect immediately.
 
+> **Timeline tool call durations (v1.0.78+)**: The CLI shows how long each tool call took, right-aligned in the timeline header and ticking live while a call is in progress (for calls of at least 5 seconds). This helps you see at a glance which operations are slow. To disable, use `/settings showToolDurations` and toggle it off.
+
 GitHub Copilot CLI has two commands for managing session state, with distinct behaviours:
 
 | Command | Behaviour |
@@ -470,11 +472,15 @@ You can also press **x** on a highlighted session in the session picker (`--resu
 
 In the session picker, press **`s`** to cycle the sort order: relevance, last used, created, or name. The picker also shows the branch name and idle/in-use status for each session.
 
-The `/rewind` command opens a timeline picker that lets you roll back the conversation to any earlier point in history, reverting both the conversation and any file changes made after that point. You can also trigger it by pressing **double-Esc**:
+**Sessions tab (v1.0.79+)**: The CLI now includes a **Sessions tab** in the sidebar that lets you manage multiple concurrent sessions without leaving the current one. Open it to see all active and backgrounded sessions, switch between them, and close sessions you no longer need — all from within the running CLI interface.
+
+The `/rewind` command opens a timeline picker that lets you roll back the conversation to any earlier point in history. You can also trigger it by pressing **double-Esc**:
 
 ```
 /rewind
 ```
+
+When you select a rewind point, you can choose to restore **conversation only** (keeping file changes as they are) or **conversation and files** (reverting files Copilot changed after that point). Rewind does not require a git repository — it tracks the files Copilot wrote directly. Only files Copilot modified are candidates for reversion; any other changes in your working tree are left untouched.
 
 Use `/rewind` when you want to branch off from a different point in the conversation, rather than just undoing the most recent turn.
 
@@ -519,6 +525,14 @@ In v1.0.66+, you can pass a task description to `/worktree` to name the branch f
 This creates a branch named from your task description and begins working on it immediately, making it easy to spin up parallel work without stopping to think of a branch name.
 
 After the command runs, the session is inside the new worktree. Use this when you want to work on a second task in parallel without stashing changes or opening a new terminal. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins.
+
+In v1.0.78+, use `/worktree new` to create a fresh worktree **and** start a new independent conversation in it — unlike `/worktree <branch>` which moves the current session, `/worktree new` opens a new session in the new worktree while leaving the current one intact:
+
+```
+/worktree new
+```
+
+This is useful when you want to start a completely separate line of work without affecting your ongoing session.
 
 The `/every` command (also available as `/loop` since v1.0.64) schedules a recurring prompt to run automatically at a specified interval. The companion `/after` command runs a prompt once after a specified delay. Both are useful for self-paced automation — polling for results, periodically summarizing progress, or triggering other slash commands on a timer:
 
@@ -661,6 +675,22 @@ Use `/autopilot` when you want to flip between supervised and unsupervised opera
 > **Auto allow-all mode (v1.0.69+)**: In addition to the standard allow-all mode (which approves everything), the CLI now supports an **auto allow-all** mode that uses an LLM judge to evaluate each tool request. When enabled, the judge automatically approves requests it evaluates as acceptable, and asks you for manual confirmation only for requests it considers risky. This gives you a middle ground between full autopilot and fully supervised operation — most routine actions proceed automatically while unusual or potentially dangerous actions still surface for your review. As of v1.0.69-3, this mode requires experimental features to be enabled — use `/experimental on` or start the CLI with `--experimental` — then activate it with `/allow-all auto`. The previous `AUTO_APPROVAL` environment variable approach has been removed in favour of experimental mode.
 
 > **Read-only `gh` CLI commands (v1.0.46+)**: Read-only `gh` commands — such as `gh issue list`, `gh pr view`, `gh run status`, and other commands that don't write to GitHub — are **automatically approved** without a permission prompt. Only commands that write to GitHub (like creating issues, merging PRs) still require explicit approval. This reduces friction during exploratory sessions where you frequently check issue or PR status.
+
+The `/permissions` command (v1.0.78+) lets you switch between approval modes without using multiple separate commands. It combines access to interactive, autopilot, and auto modes in one place:
+
+```
+/permissions
+```
+
+Run `/permissions` to open the mode picker, or pass a mode directly:
+
+```
+/permissions interactive   # require confirmation for every tool use
+/permissions autopilot     # approve all tools automatically (/allow-all on)
+/permissions auto          # use the LLM judge to approve or escalate
+```
+
+Use `/permissions` as a single entry point when you want to quickly change how much autonomy the agent has without remembering which of `/autopilot`, `/allow-all`, or `/allow-all auto` to use.
 
 The `--effort` flag (shorthand for `--reasoning-effort`) controls how much computational reasoning the model applies to a request:
 
