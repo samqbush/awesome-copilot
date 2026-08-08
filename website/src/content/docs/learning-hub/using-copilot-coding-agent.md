@@ -3,7 +3,7 @@ title: 'Using the Copilot Coding Agent'
 description: 'Learn how to use GitHub Copilot coding agent to autonomously work on issues, generate pull requests, and automate development tasks.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-05-13
+lastUpdated: 2026-08-08
 estimatedReadingTime: '12 minutes'
 tags:
   - coding-agent
@@ -377,6 +377,60 @@ Since v1.0.47, `--resume` also surfaces **cloud agent sessions that haven't yet 
 
 > **Note**: Remote control replaces the earlier "steering" feature. If you see references to steering in older documentation, remote control is the updated equivalent.
 
+### Planning Before Autopilot
+
+You can combine `--plan` with `--mode autopilot` to have the agent produce a plan first, then implement it without pausing for approval at each step:
+
+```bash
+copilot --plan --mode autopilot
+```
+
+This is useful when you trust the plan but want to skip the manual "approve each tool call" overhead of standard autopilot. The agent will:
+1. Present a plan for your review
+2. After you confirm, switch into autopilot and implement without further interruptions
+
+This differs from running `--mode autopilot` alone (which skips planning) or running `--plan` alone (which pauses for approval at each step after the plan).
+
+## Managing Multiple Concurrent Sessions
+
+As of v1.0.79, the **Sessions sidebar** is a built-in feature for managing multiple active sessions from a single CLI window — no experimental mode required.
+
+### Using the Sessions Sidebar
+
+The sidebar shows all your active sessions with their current status. From it you can:
+
+- Switch between sessions with a single keypress
+- See which sessions are idle, running, or waiting for input
+- Spawn new sessions without closing the current one
+
+To open the sidebar, use `/sessions` or press the keyboard shortcut shown in the footer.
+
+### Creating a New Worktree Session
+
+Use `/new-worktree` (currently experimental — enable with `/experimental on`) to create a fresh git worktree and start a new conversation inside it:
+
+```
+/new-worktree
+```
+
+This gives each parallel task its own isolated branch and working directory, preventing agents from interfering with each other's changes.
+
+### Configuring Worktree Start Point
+
+By default, `/worktree`, `/worktree new`, and `--worktree` all start from your current `HEAD`. The `worktreeBaseRef` setting lets you change this:
+
+```json
+{
+  "worktreeBaseRef": "origin/main"
+}
+```
+
+Set it in your `settings.json` (accessible via `/settings`) to start new worktrees from the remote default branch rather than your local HEAD — useful when you always want a clean baseline.
+
+### Large Monorepo Search Performance
+
+In large monorepos, Copilot CLI now uses **tgrep** (trigram-indexed grep) instead of ripgrep for code searches. Trigram indexing dramatically speeds up regex searches across codebases with tens of thousands of files. This is automatic — no configuration needed.
+
 ## Hooks and the Coding Agent
 
 Hooks are especially valuable with the coding agent because they provide deterministic guardrails for autonomous work:
@@ -438,7 +492,7 @@ A: The agent has built-in timeouts. If it can't make progress, it will open a PR
 
 **Q: Can I assign multiple issues at once?**
 
-A: Yes. The coding agent can work on multiple issues in parallel, each in its own branch. Use Mission Control on GitHub.com to track all active agent sessions.
+A: Yes. The coding agent can work on multiple issues in parallel, each in its own branch. Use Mission Control on GitHub.com to track all active agent sessions. In the CLI, the **Sessions sidebar** (GA as of v1.0.79) lets you manage multiple concurrent sessions from a single window — switch between them, spawn new ones, and monitor their status without context-switching.
 
 **Q: Does the coding agent use my custom agents and skills?**
 
