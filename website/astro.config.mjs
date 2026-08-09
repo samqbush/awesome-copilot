@@ -85,6 +85,7 @@ export default defineConfig({
             "learning-hub/building-custom-agents",
             "learning-hub/understanding-mcp-servers",
             "learning-hub/automating-with-hooks",
+            "learning-hub/copilot-cli-sandbox",
             "learning-hub/agentic-workflows",
             "learning-hub/using-copilot-coding-agent",
             "learning-hub/installing-and-using-plugins",
