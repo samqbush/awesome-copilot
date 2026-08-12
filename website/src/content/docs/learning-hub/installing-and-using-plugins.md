@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-24
+lastUpdated: 2026-08-12
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -34,6 +34,8 @@ A plugin bundles one or more of the following components:
 | **MCP Servers** | Model Context Protocol integrations for external tools | `.mcp.json` or `.github/mcp.json` |
 | **LSP Servers** | Language Server Protocol integrations | `lsp.json` or `.github/lsp.json` |
 | **Extensions** | IDE extensions installable via the plugin marketplace (v1.0.62+) | `extensions/` |
+
+> **Plugin extensions** (v1.0.79+): Plugins following the Agent Plugins spec can ship Canvas extensions by placing them under a `com.github.copilot/extensions/` directory inside the plugin. This allows plugins to bundle interactive canvas UI alongside their agents, skills, and hooks.
 
 A plugin might include all of these or just one — for example, a plugin could provide a single specialized agent, or an entire development toolkit with multiple agents, skills, hooks, and MCP server configurations working together.
 
@@ -159,6 +161,22 @@ To automatically register an additional marketplace for everyone working in a re
 ```
 
 With this in place, team members automatically get the `my-org-plugins` marketplace available without running a separate `marketplace add` command. This replaces the older `marketplaces` setting, which was removed in v1.0.16.
+
+**Auto-updating marketplace plugins** (v1.0.79+): Add `"autoUpdate": true` to any `extraKnownMarketplaces` entry to automatically update its plugins at session start:
+
+```json
+{
+  "extraKnownMarketplaces": [
+    {
+      "name": "my-org-plugins",
+      "source": "my-org/internal-plugins",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+This is useful for internal plugin marketplaces where you always want team members to be on the latest version without running `copilot plugin marketplace update` manually.
 
 ## Installing Plugins
 
