@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-08-12
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -403,6 +403,12 @@ CLI settings use **camelCase** naming. Key settings added in recent releases:
 | `proxy` | HTTP(S) proxy URL for all outbound CLI requests (e.g., `http://proxy.example.com:8080`) (v1.0.64+) |
 | `sessionLimits` | Restrict credit or turn usage for a session; limits apply across the current conversation and reset on `/clear` (v1.0.66+) |
 | `stayInAutopilot` | Keep the CLI in autopilot mode after an autopilot task completes, instead of returning to interactive mode (v1.0.69+) |
+| `worktreeBaseRef` | Controls whether `/worktree`, `/worktree new`, and `--worktree` start from HEAD or the remote default branch. Defaults to HEAD (v1.0.79+) |
+| `pinnedPrompts` | Show a pinned copy of the current prompt at the top of the timeline. Off by default; set to `true` to enable (v1.0.79+) |
+
+> **Breaking changes in v1.0.79**: Two sandbox settings have been renamed. If you use sandbox configuration, update your `settings.json`:
+> - `sandbox.gitAuth` → `sandbox.auth.git` and `sandbox.ghAuth` → `sandbox.auth.gh` (the old keys are ignored)
+> - `allowDevToolCaches` → `allowDevToolAccess` (the old key is ignored; an existing `false` opt-out reverts to the default `on`)
 
 > **Note**: Older snake_case names (e.g., `include_gitignored`, `auto_updates_channel`) are still accepted for backward compatibility, but camelCase is now the preferred format.
 
@@ -415,9 +421,20 @@ These files follow the same format as `config.json` and are loaded after the glo
 
 > **Important (v1.0.36+)**: Custom agents, skills, and commands placed in `~/.claude/` (the Claude Code user directory) are **no longer loaded** by GitHub Copilot CLI. Only `~/.claude/settings.json` is read for configuration. If you previously stored personal agents or skills in `~/.claude/`, move them to the supported locations: `~/.copilot/agents/` for user-level agents, `~/.copilot/skills/` or `~/.agents/skills/` for personal skills, or `.github/agents/` and `.github/skills/` in your repositories for project-level customizations.
 
+### Model Selection
+
+The `/model` command is **session-scoped by default** (v1.0.79+). Changing your model with `/model` applies only to the current session and does not affect future sessions. To set a persistent model default for all future sessions, use `/config model`:
+
+```
+/model claude-sonnet-4.6      # change model for this session only
+/config model claude-sonnet-4.6  # set default for all future sessions
+```
+
+This separation makes it easy to experiment with a different model in one session without permanently changing your configuration. New models are added regularly — recent additions include **kimi-k3** (v1.0.79).
+
 ### Model Picker
 
-The model picker opens in a **full-screen view** with inline reasoning effort adjustment. Use the **← / →** arrow keys to change the reasoning effort level (`low`, `medium`, `high`) directly from the picker without leaving the session. The current reasoning effort level is also displayed in the model header (e.g., `claude-sonnet-4.6 (high)`) so you always know which level is active.
+The model picker opens in a **full-screen view** with inline reasoning effort adjustment. In v1.0.79+, the picker groups models into **Recent**, **Recommended**, **New**, and other sections. Use **Shift+Tab** to switch grouping views. Use the **← / →** arrow keys to change the reasoning effort level (`low`, `medium`, `high`) directly from the picker without leaving the session. The current reasoning effort level is also displayed in the model header (e.g., `claude-sonnet-4.6 (high)`) so you always know which level is active.
 
 **Auto mode and server-side model routing** (v1.0.43+): When you select **Auto** as your model, the CLI uses server-side model routing for real-time model selection. Instead of locking in a single model at session start, Auto mode evaluates each request and routes it to the most appropriate model dynamically. This means straightforward questions can be handled by a faster model while complex reasoning tasks are automatically escalated — without you needing to switch models manually.
 
@@ -520,6 +537,14 @@ This creates a branch named from your task description and begins working on it 
 
 After the command runs, the session is inside the new worktree. Use this when you want to work on a second task in parallel without stashing changes or opening a new terminal. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins.
 
+Use `/worktree new` (v1.0.79+) to start a fresh session in a brand-new worktree without providing a task description:
+
+```
+/worktree new
+```
+
+By default, all worktree commands (`/worktree`, `/worktree new`, `--worktree`) branch from **HEAD**. To change this, set `worktreeBaseRef` in your config to `remote` to start from the remote default branch instead.
+
 The `/every` command (also available as `/loop` since v1.0.64) schedules a recurring prompt to run automatically at a specified interval. The companion `/after` command runs a prompt once after a specified delay. Both are useful for self-paced automation — polling for results, periodically summarizing progress, or triggering other slash commands on a timer:
 
 ```
@@ -579,6 +604,8 @@ The `/diagnose` command (v1.0.64+) analyzes the current session's logs and surfa
 Use `/diagnose` when a session is behaving unexpectedly — it inspects session logs and reports what it finds, making it easier to share diagnostics with support or understand what happened internally.
 
 **Keyboard shortcuts for queuing messages**: Use **Ctrl+Q** or **Ctrl+Enter** to queue a message (send it while the agent is still working). **Ctrl+D** no longer queues messages — it now has its default terminal behavior. If you have muscle memory for Ctrl+D queuing, switch to Ctrl+Q.
+
+**Queuing prompts and commands** (v1.0.79+): You can queue prompts, shell commands, and supported slash commands in local sessions to run in order after the current task finishes. This means you can send multiple follow-up instructions while the agent is still working, and they will execute sequentially — no need to wait and watch.
 
 **Background running tasks**: Press **Ctrl+X → B** to move the current running task or shell command to the background. The task continues executing while you can type a new message or review earlier output. This is useful for long-running commands where you want to interact with the agent while waiting for the result.
 
@@ -646,6 +673,16 @@ The `/allow-all` command (also accessible as `/yolo`) enables autopilot mode, wh
 
 > **Note**: `/allow-all on` permissions persist after `/clear` starts a new session, so you don't need to re-enable it each time.
 
+> **Enterprise policy (v1.0.79+)**: Organizations can enforce an `allow-auto-only` policy so `/allow-all auto` (LLM-judged approval) works while full `/allow-all on` remains blocked. This lets admins allow supervised automation without permitting fully unguarded execution.
+
+The `/sandbox` command group manages the CLI's execution sandbox. The `/sandbox policy` subcommand (v1.0.79+) shows the effective sandbox paths, denials, and network access settings for the current environment — useful for understanding what restrictions are active before running commands:
+
+```
+/sandbox policy   # show effective sandbox paths, denials, and network access
+```
+
+The `/sandbox` configuration dialog groups git, gh, and (on macOS) keychain settings under a dedicated **Auth** tab for easier management.
+
 > **ACP clients (v1.0.39+)**: ACP clients can also toggle allow-all mode programmatically via session configuration, without issuing a slash command. This is useful for automated pipelines that drive Copilot CLI through the ACP protocol.
 
 The `/autopilot` command (v1.0.45+) is a quick in-session toggle that switches between **interactive mode** (where the agent pauses to ask for confirmation before tool use) and **autopilot mode** (where it runs autonomously). Unlike `/allow-all` which specifically controls whether tool permissions are required, `/autopilot` toggles the overall agent mode:
@@ -688,6 +725,14 @@ copilot --plan          # start in plan mode (propose without executing)
 ```
 
 This is useful in scripts or CI pipelines where you want the CLI to immediately begin working in a specific mode without an interactive prompt.
+
+**Combining plan and autopilot** (v1.0.79+): Use `--plan` together with `--mode autopilot` to have the agent produce a plan first and then implement it automatically without waiting for your approval:
+
+```bash
+copilot --plan --mode autopilot "Add rate limiting to the API endpoints"
+```
+
+This is ideal for well-understood tasks where you trust the plan and want end-to-end automation in a single command.
 
 The `--max-autopilot-continues` flag controls how many times Copilot can automatically continue in autopilot mode before pausing for confirmation. The default is 5:
 
