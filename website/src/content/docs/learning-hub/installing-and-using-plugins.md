@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-24
+lastUpdated: 2026-08-15
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -46,16 +46,21 @@ my-plugin/
 ├── .github/
 │   └── plugin/
 │       └── plugin.json        # Plugin manifest (name, description, version)
-├── agents/
-│   ├── api-architect.agent.md
-│   └── test-specialist.agent.md
-├── skills/
-│   └── database-migrations/
-│       ├── SKILL.md
-│       └── scripts/migrate.sh
-├── hooks.json
+├── com.github.copilot/
+│   ├── agents/
+│   │   ├── api-architect.agent.md
+│   │   └── test-specialist.agent.md
+│   ├── skills/
+│   │   └── database-migrations/
+│   │       ├── SKILL.md
+│   │       └── scripts/migrate.sh
+│   ├── hooks/
+│   │   └── hooks.json
+│   └── extensions/            # IDE extensions (v1.0.62+)
 └── README.md
 ```
+
+> **Important (v1.0.80+)**: All plugin components — `agents/`, `commands/`, `rules/`, `hooks/`, `lsp.json`, `extensions/`, and MCP config — must be placed under the `com.github.copilot/` subdirectory inside the plugin. Components at the plugin root are no longer read. If you have an existing plugin using the old layout, Copilot will report each file's location and where to move it to help you migrate.
 
 The `plugin.json` manifest declares what the plugin contains:
 
@@ -159,6 +164,20 @@ To automatically register an additional marketplace for everyone working in a re
 ```
 
 With this in place, team members automatically get the `my-org-plugins` marketplace available without running a separate `marketplace add` command. This replaces the older `marketplaces` setting, which was removed in v1.0.16.
+
+You can also set `"autoUpdate": true` on an `extraKnownMarketplaces` entry in your user settings to automatically refresh the marketplace catalog at session start, keeping plugin listings current without a manual `marketplace update` command. This option is also respected when applied via managed/MDM settings:
+
+```json
+{
+  "extraKnownMarketplaces": [
+    {
+      "name": "my-org-plugins",
+      "source": "my-org/internal-plugins",
+      "autoUpdate": true
+    }
+  ]
+}
+```
 
 ## Installing Plugins
 
