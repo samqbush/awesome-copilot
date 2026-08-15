@@ -3,13 +3,7 @@ title: 'Getting Started with the GitHub Copilot app'
 description: 'Learn about the GitHub Copilot app, a desktop experience built for agent-native development. Understand its key features and who it''s for.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-17
-estimatedReadingTime: '8 minutes'
-tags:
-  - copilot-app
-  - desktop
-  - agents
-  - parallel-work
+lastUpdated: 2026-08-15
 relatedArticles:
   - ./using-automations-in-copilot-app.md
   - ./using-copilot-coding-agent.md
@@ -66,6 +60,14 @@ Each session the Copilot app creates runs in its own **git worktree**—a real, 
 - You can pick up a session from any device, on any worktree
 
 This makes it easy to dispatch multiple agents and trust they won't interfere with each other.
+
+You can also create worktree-isolated sessions from the Copilot CLI using `/worktree new`, which starts a fresh session in a new, isolated worktree branch alongside your current work:
+
+```
+/worktree new
+```
+
+By default, new worktrees start from the current `HEAD`. You can change this behavior with the `worktreeBaseRef` setting — set it to your remote default branch (e.g., `origin/main`) if you prefer worktrees to start from there instead of your local state.
 
 ### Canvases
 
@@ -149,6 +151,18 @@ Each session runs in its own worktree with its own isolated environment. You can
 ### Launching Sessions from the Terminal with Deep Links
 
 The GitHub Copilot app supports URL deep links. This is useful when you want to open the app or start a session directly from your terminal workflow.
+
+#### From the Copilot CLI with `/app`
+
+If you're already in a Copilot CLI session, you can open the same session in the GitHub Copilot desktop app with a single command (requires GitHub Copilot app 1.1.3 or later):
+
+```
+/app
+```
+
+This opens the current session directly in the app, so you can switch from your terminal to the visual interface without losing context or creating a new session.
+
+#### URL Deep Links
 
 Supported schemes:
 
