@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-08-16
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -403,6 +403,8 @@ CLI settings use **camelCase** naming. Key settings added in recent releases:
 | `proxy` | HTTP(S) proxy URL for all outbound CLI requests (e.g., `http://proxy.example.com:8080`) (v1.0.64+) |
 | `sessionLimits` | Restrict credit or turn usage for a session; limits apply across the current conversation and reset on `/clear` (v1.0.66+) |
 | `stayInAutopilot` | Keep the CLI in autopilot mode after an autopilot task completes, instead of returning to interactive mode (v1.0.69+) |
+| `worktreeBaseRef` | Controls whether `/worktree`, `/worktree new`, and `--worktree` start from `HEAD` or the remote default branch. Defaults to `HEAD` (v1.0.79+) |
+| `pinnedPrompts` | Show the current prompt pinned at the top of the timeline. Off by default; set to `true` to enable (v1.0.79+) |
 
 > **Note**: Older snake_case names (e.g., `include_gitignored`, `auto_updates_channel`) are still accepted for backward compatibility, but camelCase is now the preferred format.
 
@@ -422,6 +424,23 @@ The model picker opens in a **full-screen view** with inline reasoning effort ad
 **Auto mode and server-side model routing** (v1.0.43+): When you select **Auto** as your model, the CLI uses server-side model routing for real-time model selection. Instead of locking in a single model at session start, Auto mode evaluates each request and routes it to the most appropriate model dynamically. This means straightforward questions can be handled by a faster model while complex reasoning tasks are automatically escalated — without you needing to switch models manually.
 
 **Model family aliases** (v1.0.64+): Instead of typing a full model name, you can use short family aliases in the model setting: `opus`, `sonnet`, `haiku` (Anthropic), and `gpt`, `gemini` (Google/OpenAI). The CLI resolves the alias to the latest available model in that family. This is especially useful in scripts or configuration files where you want to track the best model in a family without hardcoding a version string.
+
+**Model picker groupings** (v1.0.79+): The model picker organises available models into sections — **Recent**, **Recommended**, **New**, and others — so you can quickly find the right model. Press **Shift+Tab** to switch between grouping views, letting you browse by recency, recommendation, or other criteria without scrolling through a flat list.
+
+**`/model` is session-scoped by default** (v1.0.79+): The `/model` command applies a model choice to the **current session only**. Use `/config model` to set a persistent default model that applies to all future sessions. This separation prevents a mid-session model change from unexpectedly affecting your next conversation:
+
+```
+/model claude-sonnet-4.6      # use this model for this session only
+/config model claude-sonnet-4.6  # set a persistent default for future sessions
+```
+
+**`/model plan`** (v1.0.74+): To use a different model specifically when in plan mode — for example, a reasoning-optimised model for planning and a faster model for implementation — use `/model plan` (or `/model --plan`):
+
+```
+/model plan                   # open picker to select plan-mode model
+/model plan claude-opus-4     # set a specific plan-mode model
+/model plan off               # clear the plan-mode model override
+```
 
 ### CLI Session Commands
 
@@ -517,6 +536,15 @@ In v1.0.66+, you can pass a task description to `/worktree` to name the branch f
 ```
 
 This creates a branch named from your task description and begins working on it immediately, making it easy to spin up parallel work without stopping to think of a branch name.
+
+**`/worktree new`** (v1.0.79+): Use `/worktree new` to create a new worktree and start a **fresh session** in it — without a kickoff task:
+
+```
+/worktree new                 # create a new worktree and switch to a fresh session
+/worktree new feature/dark-mode  # create a worktree on a named branch
+```
+
+This is useful when you want to start a parallel line of work from a clean slate while keeping your current session intact. By default, all worktree commands start from `HEAD`; adjust the `worktreeBaseRef` setting if you prefer to branch from the remote default branch instead.
 
 After the command runs, the session is inside the new worktree. Use this when you want to work on a second task in parallel without stashing changes or opening a new terminal. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins.
 
@@ -688,6 +716,14 @@ copilot --plan          # start in plan mode (propose without executing)
 ```
 
 This is useful in scripts or CI pipelines where you want the CLI to immediately begin working in a specific mode without an interactive prompt.
+
+**Combining `--plan` with `--mode autopilot`** (v1.0.79+): You can now pass both `--plan` and `--mode autopilot` together to let Copilot first produce a plan and then immediately execute it in autopilot mode — without waiting for you to approve the plan interactively:
+
+```bash
+copilot --plan --mode autopilot -p "Refactor the authentication module"
+```
+
+This is particularly useful in automated pipelines where you want structured planning before autonomous execution.
 
 The `--max-autopilot-continues` flag controls how many times Copilot can automatically continue in autopilot mode before pausing for confirmation. The default is 5:
 

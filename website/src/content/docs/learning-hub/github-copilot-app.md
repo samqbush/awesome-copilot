@@ -3,10 +3,7 @@ title: 'Getting Started with the GitHub Copilot app'
 description: 'Learn about the GitHub Copilot app, a desktop experience built for agent-native development. Understand its key features and who it''s for.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-17
-estimatedReadingTime: '8 minutes'
-tags:
-  - copilot-app
+lastUpdated: 2026-08-16
   - desktop
   - agents
   - parallel-work
@@ -87,6 +84,16 @@ For a hands-on guide to building canvases with `/create-canvas`, see [Working wi
 - Can automatically merge when all conditions are met
 
 You control the automation level—decide whether Agent Merge should just run CI, address feedback, or go all the way to merging. It's a way to let Copilot handle the tedious parts of the review and merge process.
+
+### Opening the App from the CLI
+
+If you are working in the GitHub Copilot CLI and want to jump directly into the Copilot app for the current session, use the `/app` command (v1.0.79+, requires GitHub Copilot app 1.1.3 or later):
+
+```
+/app
+```
+
+This opens the Copilot app and lands you directly in the current CLI session — preserving context and letting you switch seamlessly between the terminal and the desktop experience. This is especially useful when a task starts in the CLI but you want the richer visual interface of the app for review or parallel work.
 
 ## Who is the Copilot app for?
 
