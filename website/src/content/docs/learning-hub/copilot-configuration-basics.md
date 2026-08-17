@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-08-17
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -419,6 +419,16 @@ These files follow the same format as `config.json` and are loaded after the glo
 
 The model picker opens in a **full-screen view** with inline reasoning effort adjustment. Use the **← / →** arrow keys to change the reasoning effort level (`low`, `medium`, `high`) directly from the picker without leaving the session. The current reasoning effort level is also displayed in the model header (e.g., `claude-sonnet-4.6 (high)`) so you always know which level is active.
 
+The picker groups models into **Recent**, **Recommended**, **New**, and other sections (v1.0.79+). Use **Shift+Tab** to toggle between grouping views.
+
+**Session-scoped model selection** (v1.0.79+): `/model` now changes the model for the current session only. To set the default model for future sessions, use:
+
+```
+/config model
+```
+
+This separates per-session overrides from your persistent default, so experimenting with a different model for one task doesn't change your long-term preference.
+
 **Auto mode and server-side model routing** (v1.0.43+): When you select **Auto** as your model, the CLI uses server-side model routing for real-time model selection. Instead of locking in a single model at session start, Auto mode evaluates each request and routes it to the most appropriate model dynamically. This means straightforward questions can be handled by a faster model while complex reasoning tasks are automatically escalated — without you needing to switch models manually.
 
 **Model family aliases** (v1.0.64+): Instead of typing a full model name, you can use short family aliases in the model setting: `opus`, `sonnet`, `haiku` (Anthropic), and `gpt`, `gemini` (Google/OpenAI). The CLI resolves the alias to the latest available model in that family. This is especially useful in scripts or configuration files where you want to track the best model in a family without hardcoding a version string.
@@ -518,7 +528,21 @@ In v1.0.66+, you can pass a task description to `/worktree` to name the branch f
 
 This creates a branch named from your task description and begins working on it immediately, making it easy to spin up parallel work without stopping to think of a branch name.
 
+Use `/worktree new` (v1.0.79+) to start a completely new session in a freshly created worktree, rather than switching the current session:
+
+```
+/worktree new
+```
+
 After the command runs, the session is inside the new worktree. Use this when you want to work on a second task in parallel without stashing changes or opening a new terminal. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins.
+
+**`worktreeBaseRef` setting** (v1.0.79+): By default, `/worktree`, `/worktree new`, and `--worktree` all start from `HEAD`. Set `worktreeBaseRef` in your config to `"remote-default"` to always start from the remote default branch instead:
+
+```json
+{
+  "worktreeBaseRef": "remote-default"
+}
+```
 
 The `/every` command (also available as `/loop` since v1.0.64) schedules a recurring prompt to run automatically at a specified interval. The companion `/after` command runs a prompt once after a specified delay. Both are useful for self-paced automation — polling for results, periodically summarizing progress, or triggering other slash commands on a timer:
 
@@ -688,6 +712,20 @@ copilot --plan          # start in plan mode (propose without executing)
 ```
 
 This is useful in scripts or CI pipelines where you want the CLI to immediately begin working in a specific mode without an interactive prompt.
+
+**Plan then implement** (v1.0.79+): Combine `--plan` with `--mode autopilot` to first generate a plan and get your approval, then immediately implement it without further confirmation:
+
+```bash
+copilot --plan --mode autopilot "Refactor the authentication module"
+```
+
+The CLI will show the plan and wait for you to approve it. Once approved, it switches to autopilot and implements the plan end-to-end. This gives you one checkpoint (the plan) before fully autonomous execution — without needing to run two separate commands.
+
+You can also set explicit objectives mid-session with `/autopilot <objective>` (previously required experimental mode):
+
+```
+/autopilot Refactor all test files to use the new assertion helpers
+```
 
 The `--max-autopilot-continues` flag controls how many times Copilot can automatically continue in autopilot mode before pausing for confirmation. The default is 5:
 

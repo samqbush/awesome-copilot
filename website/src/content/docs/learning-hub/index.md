@@ -16,6 +16,8 @@ New to GitHub Copilot? Start here to understand the tools available to you.
 
 **Terminal**: Looking for a guided path into GitHub Copilot from the terminal? Explore the [Copilot CLI for Beginners](cli-for-beginners/) with a text-based experience or the [YouTube video series](https://www.youtube.com/watch?v=BDxRhhs36ns&list=PL0lo9MOBetEHvO-spzKBAITkkTqv4RvNl).
 
+**Multi-Session & Collaboration**: New to managing multiple sessions or sharing sessions across terminals? Learn how with [Multi-Session Development and Agent Host Protocol](multi-session-and-ahp/).
+
 ## Fundamentals
 
 Essential concepts to tailor GitHub Copilot beyond its default experience. Start with

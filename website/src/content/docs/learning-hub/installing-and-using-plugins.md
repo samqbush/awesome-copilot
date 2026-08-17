@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-24
+lastUpdated: 2026-08-17
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -160,6 +160,22 @@ To automatically register an additional marketplace for everyone working in a re
 
 With this in place, team members automatically get the `my-org-plugins` marketplace available without running a separate `marketplace add` command. This replaces the older `marketplaces` setting, which was removed in v1.0.16.
 
+To keep a marketplace's plugins automatically up to date at the start of every session, add `"autoUpdate": true` to the entry:
+
+```json
+{
+  "extraKnownMarketplaces": [
+    {
+      "name": "my-org-plugins",
+      "source": "my-org/internal-plugins",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+With `autoUpdate` enabled, the marketplace catalog is refreshed automatically each time a Copilot session starts — no manual `plugin marketplace update` needed.
+
 ## Installing Plugins
 
 ### From Copilot CLI
@@ -196,8 +212,18 @@ copilot plugin update my-plugin
 # Refresh all marketplace catalogs (fetch the latest list of available plugins)
 copilot plugin marketplace update
 
+# Refresh a specific marketplace catalog by name
+copilot plugin marketplace update my-org-plugins
+
 # Remove a plugin
 copilot plugin uninstall my-plugin
+```
+
+Or from inside an interactive session:
+
+```
+/plugin marketplace update
+/plugin marketplace update my-org-plugins
 ```
 
 ### Loading Plugins from a Local Directory
@@ -225,6 +251,29 @@ When you install a plugin, its components become available to Copilot CLI automa
 - **MCP servers** extend the tools available to agents
 
 You don't need to do any additional configuration after installing — the plugin's components integrate seamlessly into your workflow. Plugins take effect immediately after installation without requiring a Copilot CLI restart.
+
+### Agent Plugins Spec: File Layout (v1.0.80+)
+
+> **Breaking change (v1.0.80)**: Plugins using the Agent Plugins spec must now place all components under a `com.github.copilot/` subdirectory. The CLI no longer reads `commands/`, `agents/`, `rules/`, `hooks/hooks.json`, `lsp.json`, or `extensions/` from the plugin root.
+
+The correct layout for an Agent Plugins spec plugin is:
+
+```
+my-plugin/
+└── com.github.copilot/
+    ├── agents/
+    │   └── my-agent.agent.md
+    ├── commands/
+    ├── rules/
+    ├── hooks/
+    │   └── hooks.json
+    ├── lsp.json
+    └── extensions/
+```
+
+If your plugin has files at the root that belong under `com.github.copilot/`, the CLI now reports the file path and where to move it, so you get a clear migration hint rather than silent data loss.
+
+> **Not affected**: Plugins using the standard `plugin.json` manifest format (the format described in this article) continue to work as before — only the Agent Plugins spec layout changed.
 
 ## Plugins from This Repository
 
