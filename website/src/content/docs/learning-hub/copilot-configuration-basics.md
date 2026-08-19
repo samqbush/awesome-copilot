@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-08-19
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -529,7 +529,7 @@ The `/every` command (also available as `/loop` since v1.0.64) schedules a recur
 /every 1d /chronicle standup              # daily standup report via /chronicle
 ```
 
-The interval can be specified in seconds (`s`), minutes (`m`), or hours (`h`), and both commands can invoke other slash commands as their payload. To see and manage all your scheduled prompts, use `/every` with no argument — it opens the schedule manager. To cancel a running schedule, use `/every stop` or **Ctrl+C**.
+The interval can be specified in seconds (`s`), minutes (`m`), or hours (`h`), and both commands can invoke other slash commands as their payload. To see and manage all your scheduled prompts, use `/every` with no argument — it opens the **Schedule Manager**. From the Schedule Manager you can press `x` on any entry to remove an individual scheduled prompt, use `/every stop` to cancel a specific schedule, or press **Ctrl+C** to cancel the currently running one.
 
 > **Experimental**: `/every`, `/loop`, and `/after` are part of the experimental feature set. They appear in the `/experimental` slash command list — enable experimental features if they are not already visible in your current session.
 
@@ -706,6 +706,27 @@ copilot -p "Summarize the architecture shown in these diagrams" \
 ```
 
 This is useful in automated pipelines where you want to pass visual or document context (screenshots, design specs, PDF reports) to the model without interactive file selection. Multiple `--attachment` flags can be specified to include several files at once.
+
+The `--usage-output-file <path>` flag writes a JSON file containing token usage metrics at the end of a session. This is useful for teams that want to monitor AI consumption, compare usage across agents, or integrate Copilot metrics into dashboards and reporting pipelines:
+
+```bash
+copilot --usage-output-file usage.json -p "Refactor the auth module"
+```
+
+The output JSON includes totals for input tokens, output tokens, and (where reported) cache reads and writes. As of **v1.0.81**, the file also breaks down usage **per agent** — so if the session used multiple custom agents or spawned subagents, you can see each agent's contribution to the overall token spend:
+
+```json
+{
+  "totalInputTokens": 45200,
+  "totalOutputTokens": 3100,
+  "agents": [
+    { "name": "api-architect", "inputTokens": 28000, "outputTokens": 1800 },
+    { "name": "test-specialist", "inputTokens": 17200, "outputTokens": 1300 }
+  ]
+}
+```
+
+Use this flag in CI pipelines or wrapper scripts to track usage over time, set budget alerts, or compare how different agent configurations affect token consumption.
 
 The `COPILOT_HOME` environment variable sets the Copilot CLI configuration directory. It is the preferred replacement for the `--config-dir` flag, which is deprecated:
 
