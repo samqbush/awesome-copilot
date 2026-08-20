@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-08-20
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -403,6 +403,8 @@ CLI settings use **camelCase** naming. Key settings added in recent releases:
 | `proxy` | HTTP(S) proxy URL for all outbound CLI requests (e.g., `http://proxy.example.com:8080`) (v1.0.64+) |
 | `sessionLimits` | Restrict credit or turn usage for a session; limits apply across the current conversation and reset on `/clear` (v1.0.66+) |
 | `stayInAutopilot` | Keep the CLI in autopilot mode after an autopilot task completes, instead of returning to interactive mode (v1.0.69+) |
+| `defaultMode` | Set the default agent mode for new interactive sessions (`interactive`, `agent`, `autopilot`, or `plan`). Avoids passing `--mode` on every launch (v1.0.81+) |
+| `defaultPermissionMode` | Set the default permission approval behavior for new interactive sessions (e.g., `ask`, `auto`, `allow-all`). Persists your preferred approval policy across sessions (v1.0.81+) |
 
 > **Note**: Older snake_case names (e.g., `include_gitignored`, `auto_updates_channel`) are still accepted for backward compatibility, but camelCase is now the preferred format.
 
@@ -656,6 +658,8 @@ The `/autopilot` command (v1.0.45+) is a quick in-session toggle that switches b
 
 Use `/autopilot` when you want to flip between supervised and unsupervised operation mid-session without typing out the full `/allow-all on` or `/allow-all off` commands.
 
+> **Setting an objective (v1.0.80+)**: You can now pass an explicit objective to autopilot without enabling experimental mode: `/autopilot <objective>`. This directs the agent to pursue a specific goal in autopilot mode — for example, `/autopilot implement the search feature described in the issue`. Use `/goal` similarly to set or update the session objective without switching modes.
+
 > **Enhanced autopilot (v1.0.64+)**: When autopilot mode is active — including when launched with `--autopilot` at startup or during automatic continuation turns — the agent automatically handles elicitation dialogs, `ask_user` prompts, sampling requests, and permission prompts without surfacing them as interactive dialogs. This means long-running automated sessions can proceed end-to-end without manual confirmation steps.
 
 > **Auto allow-all mode (v1.0.69+)**: In addition to the standard allow-all mode (which approves everything), the CLI now supports an **auto allow-all** mode that uses an LLM judge to evaluate each tool request. When enabled, the judge automatically approves requests it evaluates as acceptable, and asks you for manual confirmation only for requests it considers risky. This gives you a middle ground between full autopilot and fully supervised operation — most routine actions proceed automatically while unusual or potentially dangerous actions still surface for your review. As of v1.0.69-3, this mode requires experimental features to be enabled — use `/experimental on` or start the CLI with `--experimental` — then activate it with `/allow-all auto`. The previous `AUTO_APPROVAL` environment variable approach has been removed in favour of experimental mode.
@@ -719,6 +723,45 @@ copilot --config-dir ~/.my-copilot-config
 ```
 
 Set `COPILOT_HOME` in your shell profile to use a custom config directory across all sessions. This is especially useful when running multiple Copilot configurations for different projects or teams.
+
+### Agent Host Protocol (AHP) — Multi-Terminal Sessions
+
+The `--ahp` flag (v1.0.80+) attaches the CLI to an **Agent Host Protocol** host, enabling multiple terminal windows to share a single Copilot session. Instead of sessions living inside a single CLI process, they live on the host — any terminal that attaches sees the same turns streaming live and can contribute prompts.
+
+```bash
+copilot --ahp           # attach to an AHP host (starts a local one if none is running)
+copilot --ahp wss://host:8765  # attach to a specific remote host
+```
+
+Once attached, a **Sessions tab** lists all sessions on the host (including ones started by other CLI instances). Press `Enter` to join a session, `n` to create a new one, and `h` to switch between hosts.
+
+**Key AHP commands** (inside an `--ahp` session):
+
+```
+/ahp status              # show host identity, health, and client count
+/ahp sessions            # list sessions on the host
+/ahp attach <id>         # join a specific session
+/ahp new                 # start a new session on the host
+/ahp cloud <env-id>      # attach to a Mission Control cloud environment
+/ahp codespace <name>    # tunnel a Codespace's copilotd to the local Sessions tab
+/ahp start [port]        # start an AHP daemon serving the current directory
+/ahp stop <host>         # stop a running AHP daemon
+/ahp restart <host>      # restart a running AHP daemon
+/ahp hosts               # list connected AHP hosts
+/ahp use <host>          # switch the active host
+```
+
+**Why use AHP?**
+
+| Scenario | Benefit |
+|----------|---------|
+| Pair programming | Two terminals, same session — no context gaps |
+| Remote Codespace sessions | Attach to a Codespace's agent from your local terminal |
+| Mission Control integration | Join a cloud environment's running session |
+| Monitor long-running tasks | Observe progress in a second terminal without interrupting |
+| Resilience | Reconnect to a session after a network drop — it keeps running on the host |
+
+> **Note**: AHP multi-client sessions are gated on the `AHP_CLIENT` feature flag during initial rollout. If the feature is not yet available in your account, the `--ahp` flag will prompt you when it becomes accessible.
 
 ### Shell Completion
 
