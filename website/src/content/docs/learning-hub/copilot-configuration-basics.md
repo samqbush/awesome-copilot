@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-08-21
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -403,6 +403,9 @@ CLI settings use **camelCase** naming. Key settings added in recent releases:
 | `proxy` | HTTP(S) proxy URL for all outbound CLI requests (e.g., `http://proxy.example.com:8080`) (v1.0.64+) |
 | `sessionLimits` | Restrict credit or turn usage for a session; limits apply across the current conversation and reset on `/clear` (v1.0.66+) |
 | `stayInAutopilot` | Keep the CLI in autopilot mode after an autopilot task completes, instead of returning to interactive mode (v1.0.69+) |
+| `defaultMode` | Default session mode for new interactive sessions (`interactive`, `plan`, or `autopilot`) (v1.0.81-6+) |
+| `defaultPermissionMode` | Default approval behavior for new interactive sessions (v1.0.81-6+) |
+| `worktreeBaseRef` | Controls whether `/worktree`, `/worktree new`, and `--worktree` start from `HEAD` or the remote default branch. All three default to `HEAD` (v1.0.79+) |
 
 > **Note**: Older snake_case names (e.g., `include_gitignored`, `auto_updates_channel`) are still accepted for backward compatibility, but camelCase is now the preferred format.
 
@@ -416,6 +419,8 @@ These files follow the same format as `config.json` and are loaded after the glo
 > **Important (v1.0.36+)**: Custom agents, skills, and commands placed in `~/.claude/` (the Claude Code user directory) are **no longer loaded** by GitHub Copilot CLI. Only `~/.claude/settings.json` is read for configuration. If you previously stored personal agents or skills in `~/.claude/`, move them to the supported locations: `~/.copilot/agents/` for user-level agents, `~/.copilot/skills/` or `~/.agents/skills/` for personal skills, or `.github/agents/` and `.github/skills/` in your repositories for project-level customizations.
 
 ### Model Picker
+
+> **Session-scoped model (v1.0.79+)**: `/model` is now **session-scoped by default** — your choice applies only to the current session and does not carry over to new sessions. To set a persistent default model for all future sessions, use `/config model` (or `copilot --config model <model-id>` from the shell). This separation makes it easy to try a different model in one session without accidentally changing your preferred default.
 
 The model picker opens in a **full-screen view** with inline reasoning effort adjustment. Use the **← / →** arrow keys to change the reasoning effort level (`low`, `medium`, `high`) directly from the picker without leaving the session. The current reasoning effort level is also displayed in the model header (e.g., `claude-sonnet-4.6 (high)`) so you always know which level is active.
 
@@ -434,6 +439,8 @@ The `/settings` command (v1.0.61+) opens an interactive dialog to browse and edi
 The settings dialog supports search — type to filter settings by name. Changes take effect immediately.
 
 GitHub Copilot CLI has two commands for managing session state, with distinct behaviours:
+
+> **Session restore (v1.0.81-7+)**: If the CLI exits unexpectedly — due to a crash or a machine restart — the next startup automatically offers to restore sessions that were still open. Choose which sessions to restore from the interactive prompt at startup.
 
 | Command | Behaviour |
 |---------|-----------|
@@ -514,6 +521,13 @@ In v1.0.66+, you can pass a task description to `/worktree` to name the branch f
 
 ```
 /worktree fix the login redirect
+```
+
+Use `/worktree new` (v1.0.79+) to start a fresh session in a brand-new worktree without carrying across any current changes:
+
+```
+/worktree new                    # new worktree, new session
+/worktree new my-feature-branch  # new worktree on a specific branch
 ```
 
 This creates a branch named from your task description and begins working on it immediately, making it easy to spin up parallel work without stopping to think of a branch name.
@@ -648,6 +662,14 @@ The `/allow-all` command (also accessible as `/yolo`) enables autopilot mode, wh
 
 > **ACP clients (v1.0.39+)**: ACP clients can also toggle allow-all mode programmatically via session configuration, without issuing a slash command. This is useful for automated pipelines that drive Copilot CLI through the ACP protocol.
 
+The `/permissions` command (v1.0.78+) opens an interactive panel to switch between approval modes — a quick way to toggle between interactive, auto, and allow-all without typing out the full `/allow-all` subcommands:
+
+```
+/permissions      # open the permissions mode selector
+```
+
+Use `/permissions` when you want a visual summary of the current approval mode and a guided way to change it.
+
 The `/autopilot` command (v1.0.45+) is a quick in-session toggle that switches between **interactive mode** (where the agent pauses to ask for confirmation before tool use) and **autopilot mode** (where it runs autonomously). Unlike `/allow-all` which specifically controls whether tool permissions are required, `/autopilot` toggles the overall agent mode:
 
 ```
@@ -719,6 +741,12 @@ copilot --config-dir ~/.my-copilot-config
 ```
 
 Set `COPILOT_HOME` in your shell profile to use a custom config directory across all sessions. This is especially useful when running multiple Copilot configurations for different projects or teams.
+
+The `copilot login --with-token` flag (v1.0.81-6+) reads an auth token from stdin, making it easy to authenticate in CI pipelines or scripted environments without an interactive browser or device-code flow:
+
+```bash
+echo "$MY_GITHUB_TOKEN" | copilot login --with-token
+```
 
 ### Shell Completion
 
