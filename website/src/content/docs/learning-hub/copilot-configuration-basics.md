@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-08-23
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -403,6 +403,8 @@ CLI settings use **camelCase** naming. Key settings added in recent releases:
 | `proxy` | HTTP(S) proxy URL for all outbound CLI requests (e.g., `http://proxy.example.com:8080`) (v1.0.64+) |
 | `sessionLimits` | Restrict credit or turn usage for a session; limits apply across the current conversation and reset on `/clear` (v1.0.66+) |
 | `stayInAutopilot` | Keep the CLI in autopilot mode after an autopilot task completes, instead of returning to interactive mode (v1.0.69+) |
+| `defaultMode` | Default agent mode for new interactive sessions: `interactive`, `plan`, or `autopilot` (v1.0.81-6+) |
+| `defaultPermissionMode` | Default approval behavior for new interactive sessions: `default`, `allow-all`, or `auto` (v1.0.81-6+) |
 
 > **Note**: Older snake_case names (e.g., `include_gitignored`, `auto_updates_channel`) are still accepted for backward compatibility, but camelCase is now the preferred format.
 
@@ -450,6 +452,8 @@ The `/session rename` command renames the current session. When called **without
 ```
 
 Auto-generated names help you find sessions quickly when switching between multiple backgrounded sessions.
+
+**Session restore** (v1.0.81-7+): When you start the CLI after a crash, machine restart, or unexpected exit, Copilot now **automatically offers to restore any sessions that were still open** when the CLI went away. A prompt appears at startup listing the sessions that can be recovered — select one to resume exactly where you left off, or dismiss to start fresh. This means a crash or forced quit no longer means reopening each terminal window by hand.
 
 You can also name a session at startup with the `--name` flag, and resume it by name later:
 
@@ -580,6 +584,8 @@ Use `/diagnose` when a session is behaving unexpectedly — it inspects session 
 
 **Keyboard shortcuts for queuing messages**: Use **Ctrl+Q** or **Ctrl+Enter** to queue a message (send it while the agent is still working). **Ctrl+D** no longer queues messages — it now has its default terminal behavior. If you have muscle memory for Ctrl+D queuing, switch to Ctrl+Q.
 
+**Voice dictation** (v1.0.81-7+): Press **Ctrl+Space** to toggle voice dictation. When active, spoken input is transcribed directly into the message input field, letting you prompt the agent hands-free.
+
 **Background running tasks**: Press **Ctrl+X → B** to move the current running task or shell command to the background. The task continues executing while you can type a new message or review earlier output. This is useful for long-running commands where you want to interact with the agent while waiting for the result.
 
 **Shell command history in normal mode** (v1.0.65+): The **↑/↓** arrow keys and **Ctrl+R** reverse search now include past shell commands (commands run with `!`) while you are in normal (non-shell) input mode. Previously you had to type `!` to enter shell mode before history worked. Now you can recall and re-run a shell command without switching modes first — useful for quickly repeating a build, test, or diagnostic command from earlier in the session.
@@ -669,6 +675,31 @@ gh copilot --effort high "Refactor the authentication module"
 ```
 
 Accepted values are `low`, `medium`, and `high`. You can also set a default via the `effortLevel` config setting.
+
+The `/instructions` command lists all active instruction files in the current session. As of v1.0.81-6, **each user instruction file is shown as a separate entry**, making it easy to see exactly which files are contributing context and where they come from:
+
+```
+/instructions
+```
+
+Use this to verify that the right instruction files are loaded for your current project — especially useful in monorepos where multiple instruction files from different directory levels may be active simultaneously.
+
+The `--add-dir` flag (v1.0.81-8+) tells the CLI to **discover custom agents and skills from additional directories** beyond the standard discovery paths. This is useful for shared tooling directories, monorepo setups, or personal skill libraries stored outside `~/.copilot/`:
+
+```bash
+copilot --add-dir ~/shared-agents          # load agents and skills from this directory
+copilot --add-dir /team/shared-tooling     # multiple --add-dir flags are supported
+```
+
+Any `.agent.md` files and skill folders found in the specified directories are loaded as if they were in one of the standard discovery locations, and appear in the agent list and skill registry immediately.
+
+The `--with-token` flag reads an authentication token from stdin when running `copilot login`, making it suitable for **CI/CD pipelines and automated environments** where interactive browser authentication is not possible:
+
+```bash
+echo "$COPILOT_TOKEN" | copilot login --with-token
+```
+
+This replaces the need for environment variable workarounds in automation scripts and is the recommended approach for headless authentication.
 
 ### CLI Startup Flags
 
