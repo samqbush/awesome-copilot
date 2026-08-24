@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-08-24
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -207,6 +207,14 @@ In addition to repository-level skills, GitHub Copilot CLI supports **personal s
 
 The `~/.agents/skills/` path aligns with the VS Code GitHub Copilot for Azure extension's default skill discovery path, while `~/.copilot/skills/` matches the Copilot CLI configuration directory. Both are supported for personal skills.
 
+You can also add extra discovery directories at startup with the `--add-dir` flag *(v1.0.81+)*. Skills and custom agents found in these directories are loaded into the session alongside your repository and personal ones:
+
+```bash
+copilot --add-dir ~/shared-team-tools --add-dir ~/my-extra-agents
+```
+
+This is useful for shared network directories, monorepo workspaces, or testing new agents without placing them in a version-controlled location.
+
 ### Custom Agents
 
 Agents are specialized assistants for specific workflows. Place agent definition files in `.github/agents/`.
@@ -403,6 +411,8 @@ CLI settings use **camelCase** naming. Key settings added in recent releases:
 | `proxy` | HTTP(S) proxy URL for all outbound CLI requests (e.g., `http://proxy.example.com:8080`) (v1.0.64+) |
 | `sessionLimits` | Restrict credit or turn usage for a session; limits apply across the current conversation and reset on `/clear` (v1.0.66+) |
 | `stayInAutopilot` | Keep the CLI in autopilot mode after an autopilot task completes, instead of returning to interactive mode (v1.0.69+) |
+| `defaultMode` | Set the default mode for new interactive sessions (`plan`, `interactive`, or `autopilot`) (v1.0.81+) |
+| `defaultPermissionMode` | Set the default approval behavior for new interactive sessions (e.g., `auto`, `manual`) (v1.0.81+) |
 
 > **Note**: Older snake_case names (e.g., `include_gitignored`, `auto_updates_channel`) are still accepted for backward compatibility, but camelCase is now the preferred format.
 
@@ -417,7 +427,7 @@ These files follow the same format as `config.json` and are loaded after the glo
 
 ### Model Picker
 
-The model picker opens in a **full-screen view** with inline reasoning effort adjustment. Use the **← / →** arrow keys to change the reasoning effort level (`low`, `medium`, `high`) directly from the picker without leaving the session. The current reasoning effort level is also displayed in the model header (e.g., `claude-sonnet-4.6 (high)`) so you always know which level is active.
+The model picker opens in a **full-screen view** with inline reasoning effort adjustment. Use the **← / →** arrow keys to change the reasoning effort level (`low`, `medium`, `high`, or `xhigh` for supported models) directly from the picker without leaving the session. The current reasoning effort level is also displayed in the model header (e.g., `claude-sonnet-4.6 (high)`) so you always know which level is active.
 
 **Auto mode and server-side model routing** (v1.0.43+): When you select **Auto** as your model, the CLI uses server-side model routing for real-time model selection. Instead of locking in a single model at session start, Auto mode evaluates each request and routes it to the most appropriate model dynamically. This means straightforward questions can be handled by a faster model while complex reasoning tasks are automatically escalated — without you needing to switch models manually.
 
@@ -457,6 +467,8 @@ You can also name a session at startup with the `--name` flag, and resume it by 
 copilot --name "auth-refactor"          # start a session with a given name
 copilot --resume="auth-refactor"        # resume that session by name
 ```
+
+**Session restore on restart** *(v1.0.81+)*: If the CLI crashes or your machine restarts while sessions are open, the next startup automatically offers to **restore those sessions**. A picker lists the sessions that were interrupted, and you can choose which ones to reopen — no need to manually look up session IDs. This makes long-running agentic sessions resilient to unexpected interruptions.
 
 The `/session delete` command removes sessions you no longer need:
 
