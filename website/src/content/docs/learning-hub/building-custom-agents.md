@@ -3,7 +3,7 @@ title: 'Building Custom Agents'
 description: 'Learn how to create specialized GitHub Copilot agents with custom personas, tool integrations, and domain expertise.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-06
+lastUpdated: 2026-08-24
 estimatedReadingTime: '10 minutes'
 tags:
   - agents
@@ -73,7 +73,7 @@ tools: ['codebase', 'terminal', 'github']
 
 **model** (recommended): The AI model that powers the agent. Choose based on the complexity of the task—use more capable models for nuanced reasoning.
 
-**reasoningEffort** *(v1.0.66+)*: Override the reasoning effort level for this agent. Accepted values are `low`, `medium`, and `high`. This lets you pin specific agents to a cost/quality tradeoff regardless of the user's global setting — for example, a quick code-formatting agent can use `low` effort, while a security reviewer uses `high`:
+**reasoningEffort** *(v1.0.66+)*: Override the reasoning effort level for this agent. Accepted values are `low`, `medium`, `high`, and `xhigh` (supported by select models, e.g. Grok 4.6, since v1.0.81). This lets you pin specific agents to a cost/quality tradeoff regardless of the user's global setting — for example, a quick code-formatting agent can use `low` effort, while a security reviewer uses `high` or `xhigh`:
 
 ```yaml
 ---
@@ -259,6 +259,7 @@ The agent can then query your database, analyze query plans, and suggest optimiz
 | Code generation, refactoring | GPT-4.1 |
 | Code-specialized tasks, large context | kimi-k2.7-code *(v1.0.68+)* |
 | Quick analysis, simple tasks | Claude Haiku or GPT-4.1-mini |
+| Fast, lightweight tasks with Google models | Gemini 3.7 Flash *(v1.0.81+)* |
 | Large codebase understanding | Models with larger context windows |
 
 ### Organizing Agents in Your Repository
@@ -281,6 +282,8 @@ Keep agents focused—one persona per file. If you find an agent trying to do to
 A: In VS Code, open Copilot Chat and use the agent picker dropdown at the top of the chat panel. Your custom agents appear alongside built-in options. You can also `@mention` an agent by name.
 
 In Copilot CLI, custom agents are discoverable via the agent picker inside a session. Clients that integrate with Copilot CLI using the **Agent Coordination Protocol (ACP)** can also list available custom agents and switch between them programmatically via the `agent` session configuration option (v1.0.40+). This allows tools like Zed, Neovim plugins, and CI pipelines driving Copilot via ACP to surface the agent picker and switch agents without requiring a slash command. ACP clients also receive the agent's **live plan** as it works through multi-step tasks (v1.0.40+), so they can display real-time progress to their users without waiting for each turn to complete.
+
+In addition (v1.0.81+), ACP clients receive **subagent IDs**, **raw event subscriptions**, and **live title, mode, command, and plan updates** as they change throughout the session — giving integrations fine-grained visibility into every state change without polling.
 
 **Q: Can agents use skills?**
 
