@@ -3,7 +3,7 @@ title: 'Getting Started with the GitHub Copilot app'
 description: 'Learn about the GitHub Copilot app, a desktop experience built for agent-native development. Understand its key features and who it''s for.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-17
+lastUpdated: 2026-08-25
 estimatedReadingTime: '8 minutes'
 tags:
   - copilot-app
@@ -49,6 +49,8 @@ The central hub of the Copilot app is the **My Work** view. This dashboard shows
 - **Overall status**: A quick overview of what's in progress, what's done, and what's blocked
 
 Instead of checking GitHub, your CLI, and VS Code for updates, everything is in one place.
+
+**Sessions sidebar** (v1.0.79+): The CLI also gains a dedicated Sessions sidebar for managing multiple concurrent terminal sessions. Switch between them, spawn new ones, and see their status at a glance — all without leaving your current terminal. This sidebar is now on by default (no longer requires experimental mode).
 
 ### Automations
 
@@ -150,7 +152,23 @@ Each session runs in its own worktree with its own isolated environment. You can
 
 The GitHub Copilot app supports URL deep links. This is useful when you want to open the app or start a session directly from your terminal workflow.
 
-Supported schemes:
+**Opening from the CLI** (v1.0.81-7+): You can open the GitHub Copilot app directly from the terminal using the `copilot app` command. When run inside a repository, it opens the app focused on that repository:
+
+```bash
+copilot app         # open the GitHub Copilot app in the current directory
+```
+
+This is the fastest way to jump from a terminal session into the app — especially useful when you want to hand off a task to an agent in the app or monitor running sessions visually.
+
+You can also use the `/app` in-session command (v1.0.79+) to open the current CLI session in the GitHub Copilot desktop app:
+
+```
+/app                # open the current session in the Copilot app
+```
+
+This requires GitHub Copilot app 1.1.3 or later and is useful when you want to continue a CLI session from within the app's visual interface.
+
+The GitHub Copilot app also supports URL **deep links** for more specific navigation. Supported schemes:
 
 - `ghapp://` (canonical)
 - `github-app://`
