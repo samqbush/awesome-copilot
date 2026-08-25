@@ -29,6 +29,9 @@ Quick-lookup resources to keep handy while you work. Browse the
 [GitHub Copilot Terminology Glossary](github-copilot-terminology-glossary/)
 for definitions of common terms and concepts.
 
+For security-conscious workflows, see [Sandbox and Security](sandbox-and-security/)
+to understand how the OS-level sandbox protects your machine during autonomous agent sessions.
+
 ## Hands-on
 
 Interactive samples and recipes to learn by doing. Jump into the

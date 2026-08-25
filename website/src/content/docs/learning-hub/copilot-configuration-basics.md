@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-08-25
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -403,6 +403,8 @@ CLI settings use **camelCase** naming. Key settings added in recent releases:
 | `proxy` | HTTP(S) proxy URL for all outbound CLI requests (e.g., `http://proxy.example.com:8080`) (v1.0.64+) |
 | `sessionLimits` | Restrict credit or turn usage for a session; limits apply across the current conversation and reset on `/clear` (v1.0.66+) |
 | `stayInAutopilot` | Keep the CLI in autopilot mode after an autopilot task completes, instead of returning to interactive mode (v1.0.69+) |
+| `defaultMode` | Default agent mode for new interactive sessions (`agent`, `autopilot`, `plan`) (v1.0.81-6+) |
+| `defaultPermissionMode` | Default approval behavior for new interactive sessions (v1.0.81-6+) |
 
 > **Note**: Older snake_case names (e.g., `include_gitignored`, `auto_updates_channel`) are still accepted for backward compatibility, but camelCase is now the preferred format.
 
@@ -520,6 +522,16 @@ This creates a branch named from your task description and begins working on it 
 
 After the command runs, the session is inside the new worktree. Use this when you want to work on a second task in parallel without stashing changes or opening a new terminal. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins.
 
+The `/worktree new` command (v1.0.79+) starts a **new session** in a new worktree without switching away from your current session. Unlike `/worktree`, which moves the current session into the worktree, `/worktree new` leaves you where you are and opens the new session in its own isolated workspace:
+
+```
+/worktree new add dark mode support
+```
+
+This is the recommended way to spin up a second parallel task while continuing work in the current session. Both sessions run independently with their own branch, context, and history.
+
+The `worktreeBaseRef` setting controls what `/worktree`, `/worktree new`, and `--worktree` branch from — the default is `HEAD` (your current commit). Change it to `remote/main` or another ref if you want new worktrees to always branch from the latest upstream default branch.
+
 The `/every` command (also available as `/loop` since v1.0.64) schedules a recurring prompt to run automatically at a specified interval. The companion `/after` command runs a prompt once after a specified delay. Both are useful for self-paced automation — polling for results, periodically summarizing progress, or triggering other slash commands on a timer:
 
 ```
@@ -578,7 +590,33 @@ The `/diagnose` command (v1.0.64+) analyzes the current session's logs and surfa
 
 Use `/diagnose` when a session is behaving unexpectedly — it inspects session logs and reports what it finds, making it easier to share diagnostics with support or understand what happened internally.
 
+### OS Sandbox
+
+GitHub Copilot CLI includes an **OS-level sandbox** that restricts which files, directories, and network resources shell commands can access during a session. The sandbox prevents accidental writes to sensitive paths and limits the blast radius of any command the agent runs on your behalf.
+
+The `/sandbox` command opens the sandbox configuration dialog:
+
+```
+/sandbox            # open the sandbox configuration dialog
+/sandbox policy     # show effective sandbox paths, denials, and network access
+```
+
+Key sandbox behaviors:
+
+- **File access**: Sandboxed commands can only read/write to directories the CLI has granted access to. Paths inside your project workspace are writable; system paths are read-only or blocked.
+- **Network access**: Outbound network access can be enabled or disabled. When disabled, commands cannot make outbound connections.
+- **Dev tool caches** (`allowDevToolAccess`, on by default): Grants sandboxed builds access to toolchain caches, registries, and installs (npm, cargo, pip, etc.) so builds work out of the box. Set `false` to opt out.
+- **Git authentication** (`sandbox.auth.git`/`sandbox.auth.gh`): Controls whether sandboxed git and gh commands can use your stored credentials.
+
+> **Note**: The sandbox setting `allowDevToolCaches` was renamed to `allowDevToolAccess` in v1.0.79. If you have `allowDevToolCaches: false` in your settings, rename it — the old key is silently ignored.
+
+Enterprise administrators can enforce a **managed sandbox floor** via MDM or managed settings that tightens (but never loosens) the user's sandbox policy. When a managed policy is active, `/sandbox` shows the org-configured values with locked fields so you can see exactly what is enforced.
+
+When a sandboxed command is blocked, the CLI surfaces a bypass prompt (if bypass is allowed) and offers to re-run the command outside the sandbox without asking the model. On Linux, blocked searches and shell commands also offer an immediate bypass. A sandbox that cannot start an MCP server now fails in seconds rather than stalling the session, and the failure message names the sandbox as the cause with instructions to fix or opt out.
+
 **Keyboard shortcuts for queuing messages**: Use **Ctrl+Q** or **Ctrl+Enter** to queue a message (send it while the agent is still working). **Ctrl+D** no longer queues messages — it now has its default terminal behavior. If you have muscle memory for Ctrl+D queuing, switch to Ctrl+Q.
+
+**Prompt queuing** (v1.0.79+): You can queue multiple prompts, shell commands, and supported slash commands to run in sequence after the current task finishes. Send a message while the agent is working to enqueue it — the CLI shows a "pending · ctrl+c to cancel" indicator for in-flight queued prompts. A **directable queue manager** (available via the queue sidebar) lets you reorder, edit, remove, repeat, or immediately send queued messages without cancelling the current task.
 
 **Background running tasks**: Press **Ctrl+X → B** to move the current running task or shell command to the background. The task continues executing while you can type a new message or review earlier output. This is useful for long-running commands where you want to interact with the agent while waiting for the result.
 
@@ -662,6 +700,14 @@ Use `/autopilot` when you want to flip between supervised and unsupervised opera
 
 > **Read-only `gh` CLI commands (v1.0.46+)**: Read-only `gh` commands — such as `gh issue list`, `gh pr view`, `gh run status`, and other commands that don't write to GitHub — are **automatically approved** without a permission prompt. Only commands that write to GitHub (like creating issues, merging PRs) still require explicit approval. This reduces friction during exploratory sessions where you frequently check issue or PR status.
 
+The `/permissions` command (v1.0.78+) provides an in-session shortcut to switch between approval modes without typing the full `/allow-all` command. Use it to quickly change how the CLI handles tool-use permissions mid-session:
+
+```
+/permissions        # open the permissions mode picker
+```
+
+This is especially useful when you want to temporarily switch from interactive to autopilot mode (or back) without leaving the current conversation.
+
 The `--effort` flag (shorthand for `--reasoning-effort`) controls how much computational reasoning the model applies to a request:
 
 ```bash
@@ -688,6 +734,14 @@ copilot --plan          # start in plan mode (propose without executing)
 ```
 
 This is useful in scripts or CI pipelines where you want the CLI to immediately begin working in a specific mode without an interactive prompt.
+
+You can combine `--plan` with `--mode autopilot` (v1.0.79+) to first generate a plan for user review, and then automatically implement it in autopilot mode — without waiting for approval between the plan and implementation steps:
+
+```bash
+copilot --plan --mode autopilot "Refactor the authentication module"
+```
+
+This two-phase approach lets you validate the agent's strategy (the plan) before it executes, while still automating the implementation once the plan is approved.
 
 The `--max-autopilot-continues` flag controls how many times Copilot can automatically continue in autopilot mode before pausing for confirmation. The default is 5:
 
@@ -783,3 +837,4 @@ Now that you understand Copilot configuration, explore how to create powerful cu
 - **[Defining Custom Instructions](../defining-custom-instructions/)** - Create persistent context for your projects
 - **[Creating Effective Skills](../creating-effective-skills/)** - Build reusable task folders with bundled assets
 - **[Building Custom Agents](../building-custom-agents/)** - Develop specialized assistants
+- **[Sandbox and Security](../sandbox-and-security/)** - Understand OS-level sandboxing and how to configure it
