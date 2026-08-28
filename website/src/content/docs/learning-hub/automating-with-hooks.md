@@ -3,7 +3,7 @@ title: 'Automating with Hooks'
 description: 'Learn how to use hooks to automate lifecycle events like formatting, linting, and governance checks during Copilot agent sessions.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-25
+lastUpdated: 2026-08-28
 estimatedReadingTime: '8 minutes'
 tags:
   - hooks
@@ -143,6 +143,25 @@ EOF
 ### Extension Hooks Merging
 
 When multiple IDE extensions (or a mix of extensions and a `hooks.json` file) each define hooks, all hook definitions are **merged** rather than the last one overwriting the others. This means you can layer hooks from different sources—a project's `.github/hooks/` file, an extension you have installed, and a personal settings file—and all of them will fire for the relevant events.
+
+### OpenTelemetry Trace Context *(v1.0.81+)*
+
+Hooks can now participate in distributed tracing. When a hook fires, its JSON input includes an optional `traceparent` field (and `tracestate` when vendor-specific trace state is present) following the [W3C Trace Context](https://www.w3.org/TR/trace-context/) standard. Command hooks also receive these values as environment variables (`TRACEPARENT`, `TRACESTATE`).
+
+This lets your hook scripts emit **correlated spans** to an OpenTelemetry-compatible backend, linking hook executions to the agent turn that triggered them:
+
+```bash
+#!/usr/bin/env bash
+INPUT=$(cat)
+TRACEPARENT="${TRACEPARENT:-}"
+
+# Forward the trace context to your observability backend
+curl -s -X POST https://otel-collector.example.com/hooks \
+  -H "traceparent: $TRACEPARENT" \
+  -d "$INPUT"
+```
+
+> **Note**: Hook lifecycle events (`hook.start`/`hook.end`) from hooks inside a subagent are recorded on that subagent's session and re-emitted on the parent agent's session, so trace spans from subagent hooks are fully visible in the parent context.
 
 ### Cross-Platform Event Name Compatibility
 

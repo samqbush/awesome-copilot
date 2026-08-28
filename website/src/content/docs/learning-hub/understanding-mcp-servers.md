@@ -3,7 +3,7 @@ title: 'Understanding MCP Servers'
 description: 'Learn how Model Context Protocol servers extend GitHub Copilot with access to external tools, databases, and APIs.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-06
+lastUpdated: 2026-08-28
 estimatedReadingTime: '8 minutes'
 tags:
   - mcp
@@ -120,6 +120,8 @@ This guided flow is the recommended way to add new MCP servers, especially for s
 
 **type** (remote servers): The transport type for remote MCP servers (`http` or `sse`). This field can now be omitted — the CLI defaults to `http` when no type is specified, simplifying remote server configuration.
 
+> **MCP 2026-07-28 spec support** *(v1.0.81+)*: GitHub Copilot CLI, SDK, IDE, and in-memory clients now support the **Streamable HTTP** transport defined in the July 2026 MCP specification. This is the preferred transport for new remote servers and supersedes the older SSE transport.
+
 **deferTools** *(optional, v1.0.63+)*: When set to `false`, the server's tools are always available even when tool search is enabled. By default, tool search can hide rarely-used MCP tools to reduce context noise; setting `deferTools: false` on a server prevents its tools from being deferred, keeping them permanently in the tool list.
 
 ### Allowing MCP Server Instructions
@@ -146,6 +148,19 @@ The available RPCs are:
 | `mcp.config.remove` | Remove a server from the persistent configuration |
 
 These are especially useful for plugins and installer scripts that need to self-register or de-register their MCP server as part of install/uninstall flows, without requiring the user to manually edit config files.
+
+### Persisting GitHub MCP Toolset Configuration *(v1.0.71+)*
+
+The built-in **GitHub MCP server** exposes many tools — issue management, PR operations, code search, and more. You can configure which toolsets and individual tools are enabled via `settings.json`, and the configuration persists across sessions:
+
+```json
+{
+  "githubMcpToolsets": ["issues", "pull_requests"],
+  "githubMcpTools": ["create_issue", "list_pull_requests"]
+}
+```
+
+Previously these preferences were reset on restart. With persistent configuration, your GitHub MCP setup travels with your user settings.
 
 ### Common MCP Server Configurations
 
@@ -196,6 +211,7 @@ Some MCP servers require authentication to connect to protected resources. GitHu
 - **Device code flow (RFC 8628)**: When the CLI runs in a **headless or CI environment** where a browser redirect is not possible, it automatically falls back to the device code flow. You'll see a URL and a code to enter on another device to complete authentication.
 - **`/mcp auth`**: If a token expires or you need to switch accounts, run `/mcp auth` inside a session. This opens the re-authentication UI for any OAuth-enabled MCP server and supports account switching. You can re-authenticate without restarting the session.
 - **Microsoft Entra ID (Azure AD)**: MCP servers that authenticate via Microsoft Entra ID are fully supported. Once you complete the initial login, the CLI caches the authentication and **will not show the consent screen on subsequent connections** — you authenticate once per session rather than every time the server reconnects.
+- **Windows OS authentication broker (WAM)** *(v1.0.81+)*: On Windows, remote MCP servers protected by Microsoft Entra ID can now authenticate through the **Windows Authentication Manager (WAM)** broker. This usually completes silently with no user prompt. Other platforms and machines without the broker library continue using the existing browser flow.
 - **API keys via environment variables**: Pass secrets through the `env` field in the MCP server configuration (see examples above). Never hardcode credentials in `.mcp.json`.
 - **`${input:variableName}` prompts**: VS Code will prompt for these values at runtime, keeping secrets out of committed files.
 

@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-08-28
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -403,6 +403,8 @@ CLI settings use **camelCase** naming. Key settings added in recent releases:
 | `proxy` | HTTP(S) proxy URL for all outbound CLI requests (e.g., `http://proxy.example.com:8080`) (v1.0.64+) |
 | `sessionLimits` | Restrict credit or turn usage for a session; limits apply across the current conversation and reset on `/clear` (v1.0.66+) |
 | `stayInAutopilot` | Keep the CLI in autopilot mode after an autopilot task completes, instead of returning to interactive mode (v1.0.69+) |
+| `defaultMode` | Default agent mode for new interactive sessions (`agent`, `autopilot`, or `plan`) (v1.0.81+) |
+| `defaultPermissionMode` | Default approval behavior for new interactive sessions (v1.0.81+) |
 
 > **Note**: Older snake_case names (e.g., `include_gitignored`, `auto_updates_channel`) are still accepted for backward compatibility, but camelCase is now the preferred format.
 
@@ -519,6 +521,21 @@ In v1.0.66+, you can pass a task description to `/worktree` to name the branch f
 This creates a branch named from your task description and begins working on it immediately, making it easy to spin up parallel work without stopping to think of a branch name.
 
 After the command runs, the session is inside the new worktree. Use this when you want to work on a second task in parallel without stashing changes or opening a new terminal. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins.
+
+The `/worktree new` command *(v1.0.79+)* starts a **new conversation** in a fresh worktree without carrying uncommitted changes, leaving the current worktree's work in place. Use this when you want to start a parallel task from a clean slate rather than moving your current changes:
+
+```
+/worktree new                     # new worktree with an auto-generated branch name
+/worktree new my-parallel-task    # new worktree with a named branch
+```
+
+The `worktreeBaseRef` setting *(v1.0.79+)* controls whether `/worktree`, `/worktree new`, and `--worktree` start from HEAD or the remote default branch. All three default to HEAD:
+
+```json
+{
+  "worktreeBaseRef": "origin/main"
+}
+```
 
 The `/every` command (also available as `/loop` since v1.0.64) schedules a recurring prompt to run automatically at a specified interval. The companion `/after` command runs a prompt once after a specified delay. Both are useful for self-paced automation — polling for results, periodically summarizing progress, or triggering other slash commands on a timer:
 
@@ -662,7 +679,31 @@ Use `/autopilot` when you want to flip between supervised and unsupervised opera
 
 > **Read-only `gh` CLI commands (v1.0.46+)**: Read-only `gh` commands — such as `gh issue list`, `gh pr view`, `gh run status`, and other commands that don't write to GitHub — are **automatically approved** without a permission prompt. Only commands that write to GitHub (like creating issues, merging PRs) still require explicit approval. This reduces friction during exploratory sessions where you frequently check issue or PR status.
 
-The `--effort` flag (shorthand for `--reasoning-effort`) controls how much computational reasoning the model applies to a request:
+The `/permissions` command *(v1.0.78+)* opens an interactive dialog to switch between approval modes directly inside a session — without typing out the full `/allow-all` commands:
+
+```
+/permissions        # open the approval mode picker
+```
+
+Use it as a quick alternative to `/allow-all on` / `/allow-all off` when you want a visual mode selector.
+
+The `/instructions` command *(v1.0.81+)* shows each user instruction file loaded in the current session as a separate entry, making it easy to see which instruction files are active:
+
+```
+/instructions       # list all loaded instruction files
+```
+
+The `/subagents` command *(v1.0.81+)* lists the subagents available in the current session:
+
+```
+/subagents          # list available subagents
+```
+
+The `/sandbox policy` command *(v1.0.79+)* shows the effective sandbox paths, denials, and network access configuration for the current session — useful for diagnosing permission issues in sandboxed runs:
+
+```
+/sandbox policy     # show effective sandbox policy
+``` (shorthand for `--reasoning-effort`) controls how much computational reasoning the model applies to a request:
 
 ```bash
 gh copilot --effort high "Refactor the authentication module"
@@ -688,6 +729,11 @@ copilot --plan          # start in plan mode (propose without executing)
 ```
 
 This is useful in scripts or CI pipelines where you want the CLI to immediately begin working in a specific mode without an interactive prompt.
+
+> **Plan + Autopilot combined mode** *(v1.0.79+)*: Combine `--plan` with `--mode autopilot` to have the agent first produce a plan, then automatically execute it without waiting for additional approval:
+> ```bash
+> copilot --plan --mode autopilot "Add rate limiting to the API"
+> ```
 
 The `--max-autopilot-continues` flag controls how many times Copilot can automatically continue in autopilot mode before pausing for confirmation. The default is 5:
 
@@ -719,6 +765,22 @@ copilot --config-dir ~/.my-copilot-config
 ```
 
 Set `COPILOT_HOME` in your shell profile to use a custom config directory across all sessions. This is especially useful when running multiple Copilot configurations for different projects or teams.
+
+The `copilot login --with-token` flag *(v1.0.81+)* reads an authentication token from stdin, enabling headless or scripted login flows without interactive prompts:
+
+```bash
+echo "$MY_GITHUB_TOKEN" | copilot login --with-token
+```
+
+The `copilot app` command *(v1.0.81+)* opens the **GitHub Copilot desktop app** in the current directory directly from the terminal:
+
+```bash
+copilot app
+```
+
+This is useful when you want to hand off a session to the app's visual interface, or when you prefer the app for managing parallel agent sessions.
+
+**Session restore on startup** *(v1.0.81+)*: When the CLI is restarted after a crash or unexpected exit, it now **automatically offers to restore sessions** that were open at the time. This prevents losing work when your terminal or machine restarts unexpectedly.
 
 ### Shell Completion
 
