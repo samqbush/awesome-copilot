@@ -3,7 +3,7 @@ title: 'Understanding MCP Servers'
 description: 'Learn how Model Context Protocol servers extend GitHub Copilot with access to external tools, databases, and APIs.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-06
+lastUpdated: 2026-08-29
 estimatedReadingTime: '8 minutes'
 tags:
   - mcp
@@ -36,6 +36,7 @@ GitHub Copilot  ←→  MCP Server  ←→  External System
 - Servers run locally on your machine or in a container
 - Each server exposes one or more tools with defined inputs and outputs
 - Agents and users can invoke MCP tools naturally during conversation
+- GitHub Copilot CLI supports MCP specification version **2026-07-28** (shipped in v1.0.81), keeping pace with the latest protocol features across CLI, SDK, IDE, and in-memory clients
 
 ### Built-in vs MCP Tools
 
@@ -195,7 +196,7 @@ Some MCP servers require authentication to connect to protected resources. GitHu
 - **`client_credentials` grant type**: For fully headless environments where no browser is available and no user interaction is possible (such as server-to-server automation or CI pipelines), MCP servers can authenticate using the OAuth `client_credentials` grant type. This enables machine-to-machine authentication without any browser redirect or device code prompt.
 - **Device code flow (RFC 8628)**: When the CLI runs in a **headless or CI environment** where a browser redirect is not possible, it automatically falls back to the device code flow. You'll see a URL and a code to enter on another device to complete authentication.
 - **`/mcp auth`**: If a token expires or you need to switch accounts, run `/mcp auth` inside a session. This opens the re-authentication UI for any OAuth-enabled MCP server and supports account switching. You can re-authenticate without restarting the session.
-- **Microsoft Entra ID (Azure AD)**: MCP servers that authenticate via Microsoft Entra ID are fully supported. Once you complete the initial login, the CLI caches the authentication and **will not show the consent screen on subsequent connections** — you authenticate once per session rather than every time the server reconnects.
+- **Microsoft Entra ID (Azure AD)**: MCP servers that authenticate via Microsoft Entra ID are fully supported. Once you complete the initial login, the CLI caches the authentication and **will not show the consent screen on subsequent connections** — you authenticate once per session rather than every time the server reconnects. On **Windows (v1.0.81+)**, remote MCP servers protected by Microsoft Entra ID can authenticate through the OS authentication broker (WAM), typically with **no prompt at all** when you're already signed in to Windows with the relevant account. Other platforms, `--device-code`, and machines without the broker library use the existing browser-based flow.
 - **API keys via environment variables**: Pass secrets through the `env` field in the MCP server configuration (see examples above). Never hardcode credentials in `.mcp.json`.
 - **`${input:variableName}` prompts**: VS Code will prompt for these values at runtime, keeping secrets out of committed files.
 

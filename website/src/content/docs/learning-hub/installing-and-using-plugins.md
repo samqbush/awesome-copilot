@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-24
+lastUpdated: 2026-08-29
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -181,6 +181,24 @@ Or from an interactive session:
 ### From VS Code
 
 Browse to the plugin via `@agentPlugins` in the Extensions search view or via **Chat: Plugins** in the Command Palette, then click **Install**.
+
+## Plugins Dashboard
+
+As of v1.0.81, the **plugins dashboard** is available to all users. Run any of the following commands in an interactive Copilot session to open it:
+
+```
+/plugin    # browse installed plugins and marketplaces
+/mcp       # browse MCP servers (also opens the dashboard)
+/skills    # browse available skills (also opens the dashboard)
+```
+
+The dashboard gives you a unified view of everything installed — agents, skills, hooks, MCP servers, and LSP servers — all in one place.
+
+> **Note (v1.0.81)**: The legacy `/plugins` command has been removed. Use `/plugin`, `/mcp`, `/skills`, `/subagents`, or `/instructions` instead. The `PLUGINS_DASHBOARD` environment variable opt-out has also been removed.
+
+### Plugin Update Notifications
+
+`/plugin` now **flags installed plugins and marketplaces that have a newer version available upstream** and offers an **Update** action directly in the dashboard — no need to run `copilot plugin update` manually to discover new versions. Path-sourced plugins in a local (directory-source) marketplace load live from their real directory, so editing one takes effect on `/restart` or a new session.
 
 ## Managing Plugins
 
