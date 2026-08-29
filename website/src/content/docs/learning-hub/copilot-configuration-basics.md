@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-07
+lastUpdated: 2026-08-29
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -403,6 +403,8 @@ CLI settings use **camelCase** naming. Key settings added in recent releases:
 | `proxy` | HTTP(S) proxy URL for all outbound CLI requests (e.g., `http://proxy.example.com:8080`) (v1.0.64+) |
 | `sessionLimits` | Restrict credit or turn usage for a session; limits apply across the current conversation and reset on `/clear` (v1.0.66+) |
 | `stayInAutopilot` | Keep the CLI in autopilot mode after an autopilot task completes, instead of returning to interactive mode (v1.0.69+) |
+| `defaultMode` | Default agent mode for new interactive sessions: `agent`, `autopilot`, or `plan` (v1.0.81+) |
+| `defaultPermissionMode` | Default permission approval behavior for new interactive sessions: `default`, `auto`, or `allowAll` (v1.0.81+) |
 
 > **Note**: Older snake_case names (e.g., `include_gitignored`, `auto_updates_channel`) are still accepted for backward compatibility, but camelCase is now the preferred format.
 
@@ -580,6 +582,8 @@ Use `/diagnose` when a session is behaving unexpectedly — it inspects session 
 
 **Keyboard shortcuts for queuing messages**: Use **Ctrl+Q** or **Ctrl+Enter** to queue a message (send it while the agent is still working). **Ctrl+D** no longer queues messages — it now has its default terminal behavior. If you have muscle memory for Ctrl+D queuing, switch to Ctrl+Q.
 
+**Voice dictation** (v1.0.81+): Press **Ctrl+Space** to toggle voice dictation on or off. When active, speech is transcribed and inserted at the prompt cursor. This is useful in hands-free or accessibility-focused workflows.
+
 **Background running tasks**: Press **Ctrl+X → B** to move the current running task or shell command to the background. The task continues executing while you can type a new message or review earlier output. This is useful for long-running commands where you want to interact with the agent while waiting for the result.
 
 **Shell command history in normal mode** (v1.0.65+): The **↑/↓** arrow keys and **Ctrl+R** reverse search now include past shell commands (commands run with `!`) while you are in normal (non-shell) input mode. Previously you had to type `!` to enter shell mode before history worked. Now you can recall and re-run a shell command without switching modes first — useful for quickly repeating a build, test, or diagnostic command from earlier in the session.
@@ -672,6 +676,8 @@ Accepted values are `low`, `medium`, and `high`. You can also set a default via 
 
 ### CLI Startup Flags
 
+**Session restore on startup** (v1.0.81+): When you start the CLI, it now automatically detects sessions that were still open when a previous CLI instance exited unexpectedly (e.g., a crash or machine restart) and **offers to restore them**. This means you no longer need to manually track down and resume sessions after an unexpected exit — the CLI surfaces them for you at startup.
+
 The `-C <directory>` flag changes the working directory before starting, similar to `git -C` (v1.0.42+). This is useful for scripts or aliases that need to start Copilot CLI in a specific project directory without a separate `cd`:
 
 ```bash
@@ -719,6 +725,22 @@ copilot --config-dir ~/.my-copilot-config
 ```
 
 Set `COPILOT_HOME` in your shell profile to use a custom config directory across all sessions. This is especially useful when running multiple Copilot configurations for different projects or teams.
+
+The `copilot app` command (v1.0.81+) opens the GitHub Copilot desktop app scoped to the current directory:
+
+```bash
+copilot app
+```
+
+This is a quick way to jump from the CLI into the app for a parallel multi-agent session without navigating to the correct repository manually.
+
+The `--with-token` flag for `copilot login` (v1.0.81+) lets you provide a personal access token (or other auth token) via stdin, enabling non-interactive authentication in scripts and CI pipelines:
+
+```bash
+echo "$MY_TOKEN" | copilot login --with-token
+```
+
+This is useful in automated environments where you want to authenticate the CLI without a browser flow or device code prompt.
 
 ### Shell Completion
 
