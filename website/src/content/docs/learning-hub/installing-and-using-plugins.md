@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-24
+lastUpdated: 2026-08-29
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -199,6 +199,41 @@ copilot plugin marketplace update
 # Remove a plugin
 copilot plugin uninstall my-plugin
 ```
+
+### The Plugins Dashboard (v1.0.81+)
+
+The unified **Plugins Dashboard** is available to everyone via the `/plugin` slash command in an interactive session. It brings together plugin management, MCP server configuration, and skills in one place:
+
+| Command | What It Opens |
+|---------|--------------|
+| `/plugin` | Plugins dashboard (overview of installed plugins) |
+| `/mcp` | MCP server management (configure, add, disable) |
+| `/skills` | Skills browser (discover and invoke available skills) |
+| `/subagents` | Agent browser (see active and available agents) |
+| `/instructions` | Instruction file viewer (see loaded instruction files) |
+
+> **Note (v1.0.81)**: The legacy `/plugins` command was removed. Its features are now split across `/plugin`, `/mcp`, `/skills`, `/subagents`, and `/instructions`. If you use scripts or muscle memory that referenced `/plugins`, update them to the new commands.
+
+### Plugin Update Notifications (v1.0.81+)
+
+The `/plugin` dashboard now flags installed plugins and registered marketplaces that have a newer version available upstream. When an update is detected, an **Update** action appears inline — you can apply updates directly from the dashboard without switching to the terminal.
+
+For hands-free updates, you can also configure a marketplace to auto-update its plugins every time a session starts:
+
+```json
+// ~/.copilot/settings.json
+{
+  "extraKnownMarketplaces": [
+    {
+      "name": "my-org-plugins",
+      "source": "my-org/internal-plugins",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+With `"autoUpdate": true`, the CLI pulls the latest plugin versions from that marketplace automatically at session start — no manual `copilot plugin update` required.
 
 ### Loading Plugins from a Local Directory
 
