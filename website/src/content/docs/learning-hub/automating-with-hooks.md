@@ -3,7 +3,7 @@ title: 'Automating with Hooks'
 description: 'Learn how to use hooks to automate lifecycle events like formatting, linting, and governance checks during Copilot agent sessions.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-25
+lastUpdated: 2026-08-29
 estimatedReadingTime: '8 minutes'
 tags:
   - hooks
@@ -147,6 +147,40 @@ When multiple IDE extensions (or a mix of extensions and a `hooks.json` file) ea
 ### Cross-Platform Event Name Compatibility
 
 Hook event names can be written in **camelCase** (e.g., `preToolUse`) or **PascalCase** (e.g., `PreToolUse`). Both are accepted, making hook configuration files compatible across GitHub Copilot CLI, VS Code, and Claude Code without modification. Hooks also support Claude Code's nested `matcher`/`hooks` structure alongside the standard flat format.
+
+### OpenTelemetry Trace Context (v1.0.81+)
+
+Hooks can now receive the current **OpenTelemetry trace context** and emit correlated spans. This enables end-to-end distributed tracing across your CI systems, governance tools, and Copilot agent sessions.
+
+**What you get in hook inputs:**
+
+| Field | Description |
+|-------|-------------|
+| `traceparent` | The W3C Trace Context `traceparent` header value for the current span |
+| `tracestate` | The W3C Trace Context `tracestate` header (present when the span has vendor-specific state) |
+
+Command hooks also receive these values as **environment variables** (`TRACEPARENT` and `TRACESTATE`), so you can pass them to sub-processes or HTTP calls without parsing the JSON input.
+
+This is useful for:
+- **Distributed tracing**: Correlate Copilot agent activity with your existing observability stack (Datadog, Honeycomb, Jaeger, etc.)
+- **Audit trails**: Tag log entries and audit records with the same trace ID as the agent turn that triggered them
+- **Performance analysis**: Measure how long hooks take relative to the agent tasks they surround
+
+```bash
+#!/usr/bin/env bash
+# Example: forward the trace context to your observability endpoint
+INPUT=$(cat)
+TRACE_ID=$(echo "$INPUT" | jq -r '.traceparent // empty')
+
+if [ -n "$TRACE_ID" ]; then
+  curl -s -X POST "https://telemetry.example.com/hooks" \
+    -H "traceparent: $TRACE_ID" \
+    -H "Content-Type: application/json" \
+    -d "$INPUT" &
+fi
+```
+
+> **Note**: `tracestate` is only included when the active span carries vendor-specific trace state. For most use cases, `traceparent` alone is sufficient to correlate spans.
 
 ### Plugin Hooks Environment Variables
 
