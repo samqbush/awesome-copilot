@@ -3,7 +3,7 @@ title: 'Automating with Hooks'
 description: 'Learn how to use hooks to automate lifecycle events like formatting, linting, and governance checks during Copilot agent sessions.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-25
+lastUpdated: 2026-08-30
 estimatedReadingTime: '8 minutes'
 tags:
   - hooks
@@ -606,7 +606,24 @@ You can also reference these paths as template variables in your hook configurat
 
 This is useful for plugins that bundle scripts or data files alongside their hooks, since `{{plugin_data_dir}}` always points to the correct installed location regardless of where the plugin is installed.
 
-## Writing Hook Scripts
+### OpenTelemetry Trace Context (v1.0.81+)
+
+Hooks can now receive the current **OpenTelemetry trace context** and emit correlated spans, enabling end-to-end distributed tracing across Copilot sessions and your own observability tooling.
+
+All hook inputs gain a `traceparent` field containing the W3C trace context header value. When the span has vendor-specific state, a `tracestate` field is also included. Command hooks additionally receive these as environment variables (`TRACEPARENT` and `TRACESTATE`).
+
+This allows your hook scripts to propagate the trace context when calling external services — for example, logging to a distributed tracing backend or emitting correlated spans in your team's observability platform:
+
+```bash
+#!/usr/bin/env bash
+# Example: forward trace context to an audit endpoint
+curl -s -X POST https://audit.example.com/event \
+  -H "traceparent: $TRACEPARENT" \
+  -H "Content-Type: application/json" \
+  -d "$(cat)"  # stdin contains the full hook JSON payload
+```
+
+If your hooks currently read the JSON payload to extract session metadata for logging, adding trace context propagation makes it straightforward to correlate Copilot activity with other services in the same distributed trace.
 
 For complex logic, use bundled scripts instead of inline bash commands:
 
