@@ -3,7 +3,7 @@ title: 'Automating with Hooks'
 description: 'Learn how to use hooks to automate lifecycle events like formatting, linting, and governance checks during Copilot agent sessions.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-25
+lastUpdated: 2026-09-01
 estimatedReadingTime: '8 minutes'
 tags:
   - hooks
@@ -143,6 +143,30 @@ EOF
 ### Extension Hooks Merging
 
 When multiple IDE extensions (or a mix of extensions and a `hooks.json` file) each define hooks, all hook definitions are **merged** rather than the last one overwriting the others. This means you can layer hooks from different sources—a project's `.github/hooks/` file, an extension you have installed, and a personal settings file—and all of them will fire for the relevant events.
+
+### OpenTelemetry Trace Context (v1.0.81+)
+
+Hooks can now participate in distributed tracing. When the Copilot CLI has an active OpenTelemetry trace, hooks receive trace context that lets you emit correlated spans and connect hook activity to the broader agent trace:
+
+- **All hook inputs** gain a `traceparent` field (and `tracestate` when vendor state is present)
+- **Command hooks** also receive `TRACEPARENT` (and `TRACESTATE`) as environment variables
+
+This enables correlation of hook telemetry with agent activity in observability platforms like Honeycomb, Jaeger, or any OpenTelemetry-compatible backend:
+
+```bash
+#!/usr/bin/env bash
+# Example: emit a span using the trace context from the hook input
+INPUT=$(cat)
+TRACEPARENT=$(echo "$INPUT" | jq -r '.traceparent // empty')
+
+if [ -n "$TRACEPARENT" ]; then
+  # Use the trace context to emit a correlated child span
+  otel-cli span \
+    --traceparent "$TRACEPARENT" \
+    --name "copilot-hook.postToolUse" \
+    --attrs "tool.name=$(echo $INPUT | jq -r '.tool_name')"
+fi
+```
 
 ### Cross-Platform Event Name Compatibility
 
