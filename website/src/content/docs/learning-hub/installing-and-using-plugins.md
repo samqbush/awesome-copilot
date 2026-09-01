@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-24
+lastUpdated: 2026-09-01
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -182,6 +182,18 @@ Or from an interactive session:
 
 Browse to the plugin via `@agentPlugins` in the Extensions search view or via **Chat: Plugins** in the Command Palette, then click **Install**.
 
+## Plugins Dashboard
+
+As of v1.0.81, the **plugins dashboard** is available to all users. The dashboard provides a unified interface for managing plugins, MCP servers, and skills — all accessible from within a Copilot CLI session:
+
+```
+/plugin        # open the plugins dashboard
+/mcp           # open the MCP servers dashboard
+/skills        # open the skills dashboard
+```
+
+These commands open an interactive UI where you can browse installed plugins, enable/disable components, and inspect what's active in your current session. To opt out of the dashboard and use the original command-line interface, set `PLUGINS_DASHBOARD=false` before starting the CLI, or use the `copilot plugins` command directly.
+
 ## Managing Plugins
 
 Once installed, plugins are managed with a few simple commands:
@@ -225,6 +237,12 @@ When you install a plugin, its components become available to Copilot CLI automa
 - **MCP servers** extend the tools available to agents
 
 You don't need to do any additional configuration after installing — the plugin's components integrate seamlessly into your workflow. Plugins take effect immediately after installation without requiring a Copilot CLI restart.
+
+**Non-interactive runs** (v1.0.81+): Agents, skills, and MCP servers contributed by installed plugins are now available in non-interactive (`-p`) runs. This means `--agent <plugin>:<agent>` works headlessly without requiring `--plugin-dir`:
+
+```bash
+copilot -p "Review this code for security issues" --agent my-plugin:security-reviewer
+```
 
 ## Plugins from This Repository
 
